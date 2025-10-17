@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcard Soal Tailwind</title>
+    <title>Grid Flashcard Interaktif</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        /* 1. Mengaktifkan 3D Transformation pada kontainer kartu */
+        /* CSS KUSTOM UNTUK EFEK BALIK 3D */
+        /* Catatan: Properti ini tidak tersedia sebagai utility class di Tailwind secara default */
         .card-container {
-            perspective: 1000px; /* Jarak pandang 3D */
+            /* Penting: Memberi perspektif 3D pada setiap kartu agar efek balik bekerja individual */
+            perspective: 1000px;
         }
 
-        /* 2. Mengatur elemen anak (front/back) agar mempertahankan posisi 3D */
         .card {
+            /* Penting: Memastikan elemen anak mempertahankan posisi 3D-nya */
             transform-style: preserve-3d;
-            transition: transform 0.6s; /* Transisi untuk animasi balik */
+            transition: transform 0.6s; /* Animasi balik */
         }
 
-        /* 3. Menyembunyikan sisi belakang saat kartu menghadap ke depan */
         .card-face {
+            /* Menyembunyikan sisi belakang saat kartu menghadap ke depan */
             backface-visibility: hidden;
             position: absolute;
             top: 0;
@@ -29,66 +31,34 @@
             height: 100%;
         }
 
-        /* 4. Memutar sisi belakang secara default agar siap tampil saat dibalik */
+        /* Memutar sisi belakang secara default agar siap tampil saat dibalik */
         .card-back {
             transform: rotateY(180deg);
         }
 
-        /* 5. Aksi Balik: Saat class 'flipped' ditambahkan ke '.card' */
+        /* Aksi Balik: Saat class 'flipped' ditambahkan ke '.card' */
         .card.flipped {
             transform: rotateY(180deg);
         }
     </style>
 </head>
-<body>
-    <div class="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-    
-        <div class="card-container w-full max-w-sm">
+<body class="bg-gray-100">
 
-            <div 
-                class="card bg-white rounded-xl shadow-2xl relative w-full h-80 cursor-pointer"
-                onclick="flipCard(this)"
-            >
-
-                <div class="card-face card-front flex flex-col justify-center items-center p-6 bg-blue-500 text-white">
-                    <h1 class="text-3xl font-bold mb-4">Soal #<span id="card-index">1</span></h1>
-                    <p class="text-lg">Ketuk untuk melihat Soal</p>
-                </div>
-
-                <div class="card-face card-back flex flex-col justify-between p-6 bg-white text-gray-800 border border-gray-300">
-                    <div>
-                        <h2 class="text-xl font-semibold mb-3">Soal:</h2>
-                        <p id="currentQuestion" class="text-2xl font-medium">Di mana letak Tembok Besar Cina?</p>
-                    </div>
-                    
-                    <button 
-                        onclick="showAnswer(event)" 
-                        class="mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition duration-150"
-                    >
-                        Tampilkan Jawaban
-                    </button>
-                </div>
-
+    <div class="p-4 md:p-8 bg-gray-100 min-h-screen">
+        <h1 class="text-4xl font-extrabold text-center mb-10 text-gray-800">Pilih Kartu Soal</h1>
+        
+        <div 
+            id="flashcard-grid" 
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-6xl mx-auto"
+        >
             </div>
-        </div>
-    </div>
 
-    <div id="answer-box" class="mt-8 text-center w-full max-w-sm mx-auto p-4 bg-yellow-100 text-yellow-800 rounded-lg hidden">
-        </div>
+        <div 
+            id="answer-box" 
+            class="mt-10 text-center w-full max-w-lg mx-auto p-4 bg-yellow-100 text-yellow-800 rounded-lg shadow-lg hidden"
+        >
+            </div>
 
-    <div class="flex justify-center gap-4 mt-8">
-        <button 
-            onclick="navigateCard(-1)"
-            class="px-6 py-2 bg-gray-300 hover:bg-gray-400 rounded-lg font-bold"
-        >
-            &larr; Sebelumnya
-        </button>
-        <button 
-            onclick="navigateCard(1)"
-            class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg"
-        >
-            Berikutnya &rarr;
-        </button>
     </div>
 
     <script>
@@ -108,63 +78,111 @@
                 question: "Proses perubahan wujud dari cair ke gas disebut apa?", 
                 answer: "Penguapan" 
             },
+            { 
+                id: 4, 
+                question: "Planet terdekat kedua dari Matahari?", 
+                answer: "Venus" 
+            },
+            { 
+                id: 5, 
+                question: "Senyawa kimia air?", 
+                answer: "H₂O" 
+            },
+            { 
+                id: 6, 
+                question: "Apakah nama samudera terbesar di dunia?", 
+                answer: "Samudera Pasifik" 
+            },
         ];
 
-        let currentCardIndex = 0;
+        const gridContainer = document.getElementById('flashcard-grid');
+        const answerBox = document.getElementById('answer-box');
 
-        function updateCardContent() {
-            const cardData = quizData[currentCardIndex];
-            document.getElementById('card-index').textContent = currentCardIndex + 1;
-            document.getElementById('currentQuestion').textContent = cardData.question;
+        // Fungsi untuk membuat markup HTML untuk satu kartu
+        function createCardMarkup(data, index) {
             
-            const cardElement = document.querySelector('.card');
-            cardElement.classList.remove('flipped'); // Reset kartu ke sisi depan (polos)
-            
-            const answerBox = document.getElementById('answer-box');
-            answerBox.classList.add('hidden');
-            answerBox.innerHTML = ''; // Hapus jawaban
+            return `
+                <div class="card-container">
+                    <div 
+                        class="card bg-white rounded-xl shadow-xl relative w-full h-64 cursor-pointer"
+                        onclick="flipCard(this)"
+                        data-index="${index}"
+                    >
+                        <div class="card-face card-front flex flex-col justify-center items-center p-6 bg-blue-500 text-white rounded-xl">
+                            <h1 class="text-3xl font-bold mb-4">Soal #${data.id}</h1>
+                            <p class="text-lg">Ketuk untuk melihat Soal</p>
+                        </div>
 
-            const answerButton = document.querySelector('.card-back button');
-            answerButton.disabled = false;
-            answerButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                        <div class="card-face card-back flex flex-col justify-between p-6 bg-white text-gray-800 border border-gray-300 rounded-xl">
+                            <div>
+                                <h2 class="text-xl font-semibold mb-3">Soal:</h2>
+                                <p class="text-xl font-medium">${data.question}</p>
+                            </div>
+                            
+                            <button 
+                                onclick="showAnswer(event, ${index})" 
+                                class="show-answer-btn mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition duration-150"
+                            >
+                                Tampilkan Jawaban
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
+        // Fungsi untuk me-render semua kartu ke dalam grid
+        function renderCards() {
+            gridContainer.innerHTML = ''; // Kosongkan wadah
+            quizData.forEach((data, index) => {
+                // Menambahkan markup ke wadah grid
+                gridContainer.innerHTML += createCardMarkup(data, index);
+            });
+        }
+
+
+        // Fungsi dipanggil saat kartu diklik
         function flipCard(cardElement) {
             cardElement.classList.toggle('flipped');
-            if (!cardElement.classList.contains('flipped')) {
-                // Sembunyikan jawaban jika membalik kembali ke sisi polos
-                document.getElementById('answer-box').classList.add('hidden');
-            }
+            
+            // Opsional: Sembunyikan jawaban global saat kartu dibalik, terlepas dari sisinya
+            answerBox.classList.add('hidden');
+            answerBox.innerHTML = '';
+            
+            // Reset semua tombol jawaban setiap kali kartu dibalik (agar tombol aktif lagi)
+            document.querySelectorAll('.show-answer-btn').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
         }
 
-        function showAnswer(event) {
-            event.stopPropagation(); // Penting: Mencegah klik tombol memicu flipCard
+        // Fungsi dipanggil saat tombol "Tampilkan Jawaban" diklik
+        function showAnswer(event, index) {
+            event.stopPropagation(); // Mencegah klik tombol memicu flipCard pada kartu induk
             
-            const answerText = quizData[currentCardIndex].answer;
-            const answerBox = document.getElementById('answer-box');
+            const cardData = quizData[index];
             
-            answerBox.innerHTML = `<p class="font-bold">Jawaban:</p> ${answerText}`;
-            answerBox.classList.remove('hidden');
+            // 1. Reset visual semua tombol jawaban
+            document.querySelectorAll('.show-answer-btn').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
             
+            // 2. Nonaktifkan tombol yang sedang diklik
             event.target.disabled = true;
             event.target.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // 3. Tampilkan jawaban di Kotak Jawaban Global
+            answerBox.innerHTML = `
+                <p class="font-bold text-lg mb-1">Jawaban Soal #${cardData.id}:</p> 
+                ${cardData.answer}
+            `;
+            answerBox.classList.remove('hidden');
         }
 
-        function navigateCard(direction) {
-            currentCardIndex += direction;
-            
-            // Logika putaran (wrap-around navigation)
-            if (currentCardIndex < 0) {
-                currentCardIndex = quizData.length - 1; 
-            } else if (currentCardIndex >= quizData.length) {
-                currentCardIndex = 0; 
-            }
-            
-            updateCardContent();
-        }
 
         // Inisialisasi kartu saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', updateCardContent);
+        document.addEventListener('DOMContentLoaded', renderCards);
     </script>
 </body>
 </html>
