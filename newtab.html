@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Tab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        .search-engine-option {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .search-engine-option:hover {
+            transform: scale(1.05);
+        }
+        .search-engine-option.active {
+            border: 2px solid #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-img bg-no-repeat bg-cover mx-auto my-auto min-h-screen" id="random-image">
+    <header class="flex gap-3 md:gap-5 mt-6 md:mt-10 justify-center items-center px-4">
+        <div class="flex flex-col w-8 h-8 md:w-12 md:h-12">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Firefox_logo%2C_2019.svg" class="w-full h-full object-contain" alt="Firefox Logo">
+        </div>
+        <div class="flex flex-col w-24 md:w-32">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Firefox_wordmark.svg" class="brightness-200 w-full h-auto object-contain" alt="Firefox Wordmark">
+        </div>
+    </header>
+
+    <main class="flex flex-col justify-center items-center mt-6 md:mt-10 px-4">
+        <!-- Search Engine Selector -->
+        <div class="flex gap-3 mb-4 flex-wrap justify-center">
+            <div class="search-engine-option active bg-white rounded-lg p-2 shadow" data-engine="google" data-action="https://www.google.com/search" data-param="q">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-8 h-8" alt="Google">
+            </div>
+            <div class="search-engine-option bg-white rounded-lg p-2 shadow" data-engine="bing" data-action="https://www.bing.com/search" data-param="q">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Bing_Fluent_Logo.svg" class="w-8 h-8" alt="Bing">
+            </div>
+            <div class="search-engine-option bg-white rounded-lg p-2 shadow" data-engine="duckduckgo" data-action="https://duckduckgo.com/" data-param="q">
+                <img src="https://upload.wikimedia.org/wikipedia/en/8/88/DuckDuckGo_logo.svg" class="w-8 h-8" alt="DuckDuckGo">
+            </div>
+            <div class="search-engine-option bg-white rounded-lg p-2 shadow" data-engine="yahoo" data-action="https://search.yahoo.com/search" data-param="p">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Yahoo%21_%282019%29.svg" class="w-8 h-8" alt="Yahoo">
+            </div>
+            <div class="search-engine-option bg-white rounded-lg p-2 shadow" data-engine="ecosia" data-action="https://www.ecosia.org/search" data-param="q">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Ecosia_logo.svg" class="w-8 h-8" alt="Ecosia">
+            </div>
+        </div>
+
+        <!-- Search Form -->
+        <form id="search-form" action="https://www.google.com/search" method="get" class="max-w-lg w-full">
+            <div class="bg-white shadow-lg flex items-center rounded-lg overflow-hidden">
+                <img id="selected-engine-logo" src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" class="w-12 h-12 p-3" alt="Search Engine Logo">
+                <input type="text" placeholder="Cari di Google" name="q" id="search-input" class="flex-1 p-3 border-0 focus:outline-none">
+            </div>
+        </form>
+    </main>
+
+    <footer>
+        <div class="flex fixed bottom-4 left-4 bg-white opacity-50 p-2 items-center gap-1 rounded">
+            <span class="material-icons text-sm md:text-base">link</span>
+            <span id="result" class="text-xs md:text-sm"></span>
+        </div>
+    </footer>
+
+    <script>
+        // Search engine configuration
+        const searchEngines = {
+            google: {
+                name: 'Google',
+                logo: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
+                placeholder: 'Cari di Google'
+            },
+            bing: {
+                name: 'Bing',
+                logo: 'https://upload.wikimedia.org/wikipedia/commons/9/9c/Bing_Fluent_Logo.svg',
+                placeholder: 'Cari di Bing'
+            },
+            duckduckgo: {
+                name: 'DuckDuckGo',
+                logo: 'https://upload.wikimedia.org/wikipedia/en/8/88/DuckDuckGo_logo.svg',
+                placeholder: 'Cari di DuckDuckGo'
+            },
+            yahoo: {
+                name: 'Yahoo',
+                logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3a/Yahoo%21_%282019%29.svg',
+                placeholder: 'Cari di Yahoo'
+            },
+            ecosia: {
+                name: 'Ecosia',
+                logo: 'https://upload.wikimedia.org/wikipedia/commons/b/b7/Ecosia_logo.svg',
+                placeholder: 'Cari di Ecosia'
+            }
+        };
+
+        let currentEngine = 'google';
+
+        // Function to get today's date in YYYYMMDD format
+        function getTodayDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            let month = now.getMonth() + 1;
+            let day = now.getDate();
+            
+            if (month < 10) {
+                month = '0' + month;
+            }
+            if (day < 10) {
+                day = '0' + day;
+            }
+            return `${year}${month}${day}`;
+        }
+
+        // Generate seed based on today's date
+        const seed = getTodayDate();
+        
+        // Set background image with seed
+        const backgroundImageUrl = `https://picsum.photos/seed/${seed}/1920/1080`;
+        document.getElementById('random-image').style.backgroundImage = `url('${backgroundImageUrl}')`;
+
+        // Fetch photo info
+        const url = `https://picsum.photos/seed/${seed}/info`;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const link = `<a href="${data.url}" class="underline" target="_blank">Foto oleh ${data.author}</a>`;
+                document.getElementById('result').innerHTML = link;
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                document.getElementById('result').innerHTML = 'Error fetching data';
+            });
+
+        // Handle search engine selection
+        const searchOptions = document.querySelectorAll('.search-engine-option');
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
+        const engineLogo = document.getElementById('selected-engine-logo');
+
+        searchOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove active class from all options
+                searchOptions.forEach(opt => opt.classList.remove('active'));
+                
+                // Add active class to clicked option
+                this.classList.add('active');
+                
+                // Get engine data
+                const engine = this.dataset.engine;
+                const action = this.dataset.action;
+                const param = this.dataset.param;
+                
+                // Update form
+                searchForm.action = action;
+                searchInput.name = param;
+                searchInput.placeholder = searchEngines[engine].placeholder;
+                engineLogo.src = searchEngines[engine].logo;
+                engineLogo.alt = searchEngines[engine].name + ' Logo';
+                
+                currentEngine = engine;
+            });
+        });
+    </script>
+</body>
+</html>
