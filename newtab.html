@@ -7,6 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        
         .search-engine-option {
             cursor: pointer;
             transition: all 0.2s;
@@ -20,7 +27,7 @@
         }
     </style>
 </head>
-<body class="bg-img bg-no-repeat bg-cover mx-auto my-auto min-h-screen" id="random-image">
+<body class="bg-img bg-no-repeat bg-cover h-screen w-screen flex flex-col" id="random-image">
     <header class="flex gap-3 md:gap-5 mt-6 md:mt-10 justify-center items-center px-4">
         <div class="flex flex-col w-8 h-8 md:w-12 md:h-12">
             <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Firefox_logo%2C_2019.svg" class="w-full h-full object-contain" alt="Firefox Logo">
@@ -46,7 +53,7 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Yahoo%21_%282019%29.svg" class="w-8 h-8" alt="Yahoo">
             </div>
             <div class="search-engine-option bg-white rounded-lg p-2 shadow" data-engine="ecosia" data-action="https://www.ecosia.org/search" data-param="q">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Ecosia_logo.svg" class="w-8 h-8" alt="Ecosia">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Ecosia-like_logo.svg" class="w-8 h-8" alt="Ecosia">
             </div>
         </div>
 
