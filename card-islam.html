@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartu Hafalan Ibadah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #f0f4f8;
+            overflow-x: hidden;
+        }
+
+        .card-container {
+            perspective: 1000px;
+        }
+
+        .card {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .card.is-shuffling {
+            animation: shuffle 0.5s infinite;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            transform: rotateY(180deg);
+        }
+
+        @keyframes shuffle {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(10px, -5px) rotate(2deg); }
+            50% { transform: translate(-10px, 5px) rotate(-2deg); }
+            75% { transform: translate(5px, 10px) rotate(1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #059669, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="max-w-md w-full text-center">
+        <h1 class="text-3xl font-bold mb-2 gradient-text">Kartu Hafalan</h1>
+        <p class="text-slate-500 mb-8">Ketuk kartu untuk mengacak bacaan</p>
+
+        <!-- Category Selector -->
+        <div class="flex gap-2 mb-8 bg-white p-1 rounded-xl shadow-sm">
+            <button id="set1Btn" onclick="setCategory('ibadah')" class="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all bg-emerald-600 text-white">
+                Bacaan Ibadah
+            </button>
+            <button id="set2Btn" onclick="setCategory('surah')" class="flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all text-slate-600 hover:bg-slate-100">
+                Surah Pendek
+            </button>
+        </div>
+
+        <!-- Card Section -->
+        <div class="card-container w-full h-80 mb-8" onclick="drawCard()">
+            <div id="mainCard" class="card relative w-full h-full">
+                <!-- Front Side -->
+                <div class="card-face card-front bg-white border-4 border-emerald-100 p-8">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                            </svg>
+                        </div>
+                        <p class="text-lg font-bold text-slate-800">Siap Menghafal?</p>
+                        <p class="text-sm text-slate-400 mt-2">Klik untuk ambil kartu</p>
+                    </div>
+                </div>
+
+                <!-- Back Side (Result) -->
+                <div class="card-face card-back p-8 text-white text-center">
+                    <div>
+                        <p id="categoryLabel" class="text-emerald-100 text-xs uppercase tracking-widest mb-2">Kategori</p>
+                        <h2 id="resultText" class="text-2xl font-bold leading-tight">...</h2>
+                        <div class="mt-6 pt-6 border-t border-emerald-400/30">
+                            <p class="text-sm opacity-80 italic">Klik lagi untuk mengacak</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History/Status -->
+        <div id="statusBox" class="bg-white/50 backdrop-blur-sm rounded-2xl p-4 text-sm text-slate-600">
+            Pilih kategori di atas, lalu ketuk kartu untuk memulai sesi hafalanmu.
+        </div>
+    </div>
+
+    <script>
+        const sets = {
+            ibadah: [
+                "Niat Wudhu", "Doa Sesudah Wudhu", "Niat Subuh", "Niat Zuhur", 
+                "Niat Ashar", "Niat Maghrib", "Niat Isya", "Doa Iftitah", 
+                "Bacaan Rukuk", "Bacaan I'tidal", "Doa Qunut", "Bacaan Sujud", 
+                "Bacaan Duduk di antara dua sujud", "Tahiyyat Akhir"
+            ],
+            surah: [
+                "At-Takatsur", "Al-Asr", "Al-Humazah", "Al-Fil", 
+                "Quraisy", "Al-Ma'un", "Al-Kautsar", "Al-Kafirun", 
+                "An-Nasr", "Al-Lahab"
+            ]
+        };
+
+        let currentCategory = 'ibadah';
+        let isProcessing = false;
+
+        function setCategory(cat) {
+            if (isProcessing) return;
+            currentCategory = cat;
+            
+            // Update UI buttons
+            const btn1 = document.getElementById('set1Btn');
+            const btn2 = document.getElementById('set2Btn');
+            const mainCard = document.getElementById('mainCard');
+            
+            if (cat === 'ibadah') {
+                btn1.className = "flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all bg-emerald-600 text-white";
+                btn2.className = "flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all text-slate-600 hover:bg-slate-100";
+            } else {
+                btn2.className = "flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all bg-emerald-600 text-white";
+                btn1.className = "flex-1 py-2 px-4 rounded-lg text-sm font-semibold transition-all text-slate-600 hover:bg-slate-100";
+            }
+
+            // Reset card state
+            mainCard.classList.remove('is-flipped');
+            document.getElementById('statusBox').innerText = `Kategori diubah ke ${cat === 'ibadah' ? 'Bacaan Ibadah' : 'Surah Pendek'}.`;
+        }
+
+        function drawCard() {
+            if (isProcessing) return;
+            
+            isProcessing = true;
+            const card = document.getElementById('mainCard');
+            const resultDisplay = document.getElementById('resultText');
+            const categoryLabel = document.getElementById('categoryLabel');
+            const statusBox = document.getElementById('statusBox');
+
+            // Reset flip first if it's already flipped
+            card.classList.remove('is-flipped');
+
+            // Start Shuffle Animation after a tiny delay
+            setTimeout(() => {
+                card.classList.add('is-shuffling');
+                statusBox.innerText = "Mengacak kartu...";
+
+                // Animation duration (ilusi mengacak)
+                setTimeout(() => {
+                    card.classList.remove('is-shuffling');
+                    
+                    // Pick random item
+                    const currentSet = sets[currentCategory];
+                    const randomIndex = Math.floor(Math.random() * currentSet.length);
+                    const result = currentSet[randomIndex];
+
+                    // Set text
+                    resultDisplay.innerText = result;
+                    categoryLabel.innerText = currentCategory === 'ibadah' ? "BACAAN IBADAH" : "SURAH PENDEK";
+                    
+                    // Flip the card
+                    card.classList.add('is-flipped');
+                    statusBox.innerText = `Kamu mendapatkan: ${result}`;
+                    
+                    isProcessing = false;
+                }, 1200);
+            }, 100);
+        }
+    </script>
+</body>
+</html>
