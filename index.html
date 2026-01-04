@@ -29,13 +29,33 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        // Import Firebase SDK via ESM CDN
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
-        // Inisialisasi Firebase
-        const firebaseConfig = JSON.parse(__firebase_config);
+        /** * PENTING: Masukkan konfigurasi Firebase Anda di sini agar bisa jalan di GitHub Pages.
+         * Anda bisa mendapatkannya di Firebase Console > Project Settings.
+         */
+        const myCustomConfig = {
+            apiKey: "AIzaSyCEhuUpa6ie9TOe3rXs8xw-4KdocApEQ6o",
+            authDomain: "sandbox-nafis.firebaseapp.com",
+            projectId: "sandbox-nafis",
+            storageBucket: "sandbox-nafis.firebasestorage.app",
+            messagingSenderId: "500139016936",
+            appId: "1:500139016936:web:f5740ef05108b924163f5d",
+            measurementId: "G-4GCZLE15Z3"
+        };
+
+        // Logika pemilihan config (Gunakan internal env jika ada, jika tidak gunakan custom)
+        let firebaseConfig;
+        try {
+            firebaseConfig = typeof __firebase_config !== 'undefined' 
+                ? JSON.parse(__firebase_config) 
+                : myCustomConfig;
+        } catch (e) {
+            firebaseConfig = myCustomConfig;
+        }
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -46,7 +66,7 @@
         const App = () => {
             const [html, setHtml] = useState('<h1>Halo dari GitHub Pages!</h1>\n<p>Edit kode ini lalu klik RUN.</p>');
             const [css, setCss] = useState('body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }\nh1 { color: #2563eb; }');
-            const [js, setJs] = useState('console.log("Aplikasi Berjalan!");\n\n// Coba gunakan console.log di sini');
+            const [js, setJs] = useState('console.log("Aplikasi Berjalan!");');
             const [output, setOutput] = useState('');
             const [activeTab, setActiveTab] = useState('html');
             const [logs, setLogs] = useState([]);
@@ -54,14 +74,10 @@
             const [user, setUser] = useState(null);
             const [shareStatus, setShareStatus] = useState(null);
 
-            // Perbaikan Icon: Gunakan key unik untuk memaksa re-render aman
             const Icon = ({ name, size = 16, className = "" }) => {
                 useEffect(() => {
-                    if (window.lucide) {
-                        window.lucide.createIcons();
-                    }
+                    if (window.lucide) window.lucide.createIcons();
                 }, [name, shareStatus, activeTab]);
-                
                 return (
                     <span className={`inline-flex items-center justify-center ${className}`}>
                         <i data-lucide={name} style={{ width: size, height: size }}></i>
@@ -69,21 +85,16 @@
                 );
             };
 
-            // 1. Logika Autentikasi
             useEffect(() => {
                 const performSignIn = async () => {
-                    try {
-                        await signInAnonymously(auth);
-                    } catch (err) {
-                        console.error("Auth error:", err);
-                    }
+                    try { await signInAnonymously(auth); } 
+                    catch (err) { console.error("Firebase Auth Error: Pastikan Anonymous Auth aktif di Firebase Console.", err); }
                 };
                 performSignIn();
                 const unsubscribe = onAuthStateChanged(auth, setUser);
                 return () => unsubscribe();
             }, []);
 
-            // 2. Memuat Data dari URL
             useEffect(() => {
                 const loadData = async () => {
                     const params = new URLSearchParams(window.location.search);
@@ -94,15 +105,10 @@
                             const snap = await getDoc(docRef);
                             if (snap.exists()) {
                                 const data = snap.data();
-                                setHtml(data.html || ''); 
-                                setCss(data.css || ''); 
-                                setJs(data.js || '');
-                                // Trigger run secara manual setelah state terupdate
+                                setHtml(data.html || ''); setCss(data.css || ''); setJs(data.js || '');
                                 runCode(data.html, data.css, data.js);
                             }
-                        } catch (e) { 
-                            console.error("Gagal memuat snippet:", e); 
-                        }
+                        } catch (e) { console.error("Gagal memuat data cloud:", e); }
                     }
                 };
                 if (user) loadData();
@@ -113,10 +119,7 @@
                 const combined = `
                     <!DOCTYPE html>
                     <html>
-                        <head>
-                            <meta charset="UTF-8">
-                            <style>${c}</style>
-                        </head>
+                        <head><style>${c}</style></head>
                         <body>
                             ${h}
                             <script>
@@ -124,20 +127,11 @@
                                 console.log = (...args) => {
                                     window.parent.postMessage({ 
                                         type: 'log', 
-                                        content: args.map(a => {
-                                            try {
-                                                return typeof a === 'object' ? JSON.stringify(a) : String(a);
-                                            } catch(e) { return "[Object]"; }
-                                        }).join(' ') 
+                                        content: args.map(a => JSON.stringify(a)).join(' ') 
                                     }, '*');
                                     originalLog.apply(console, args);
                                 };
-                                window.onerror = (msg) => console.log("Error: " + msg);
-                                try { 
-                                    ${j} 
-                                } catch (e) { 
-                                    console.log("Runtime Error: " + e.message); 
-                                }
+                                try { ${j} } catch (e) { console.log("Runtime Error: " + e.message); }
                             <\/script>
                         </body>
                     </html>
@@ -148,44 +142,25 @@
             const handleSave = async () => {
                 if (!user || isSaving) return;
                 setIsSaving(true);
-                setShareStatus(null);
                 const id = crypto.randomUUID().split('-')[0];
                 try {
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'snippets', id), {
                         html, css, js, userId: user.uid, createdAt: Date.now()
                     });
-                    
                     const url = new URL(window.location.href);
                     url.searchParams.set('id', id);
                     window.history.pushState({}, '', url.toString());
-                    
-                    // Salin ke clipboard
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        await navigator.clipboard.writeText(url.toString());
-                    } else {
-                        const textArea = document.createElement("textarea");
-                        textArea.value = url.toString();
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                    }
-                    
+                    await navigator.clipboard.writeText(url.toString());
                     setShareStatus('success');
                     setTimeout(() => setShareStatus(null), 3000);
-                } catch (e) { 
-                    console.error("Simpan gagal:", e);
-                    setShareStatus('error'); 
-                } finally {
-                    setIsSaving(false);
-                }
+                } catch (e) { setShareStatus('error'); }
+                setIsSaving(false);
             };
 
-            // Menangani log dari iframe dengan pembersihan memori
             useEffect(() => {
                 const handler = (e) => {
                     if (e.data && e.data.type === 'log') {
-                        setLogs(p => [...p.slice(-99), { id: Math.random().toString(36), text: e.data.content }]);
+                        setLogs(p => [...p.slice(-50), { id: Math.random(), text: e.data.content }]);
                     }
                 };
                 window.addEventListener('message', handler);
@@ -194,114 +169,48 @@
 
             return (
                 <div className="flex flex-col h-screen bg-slate-900 text-slate-100 font-sans">
-                    <header className="flex items-center justify-between px-6 py-3 bg-slate-800 border-b border-slate-700 shadow-lg z-10">
+                    <header className="flex items-center justify-between px-6 py-3 bg-slate-800 border-b border-slate-700 shadow-lg">
                         <div className="flex items-center gap-3">
-                            <div className="bg-blue-600 p-1.5 rounded-lg">
-                                <Icon name="code" className="text-white" size={20} />
-                            </div>
-                            <h1 className="text-lg font-bold tracking-tight">Cloud Code Editor</h1>
+                            <Icon name="code" className="text-blue-400" size={24} />
+                            <h1 className="text-lg font-bold">Cloud Editor</h1>
                         </div>
                         <div className="flex gap-3">
-                            <button 
-                                onClick={handleSave} 
-                                disabled={isSaving} 
-                                className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm transition-all shadow-sm ${
-                                    shareStatus === 'success' 
-                                    ? 'bg-emerald-600 text-white' 
-                                    : 'bg-slate-700 hover:bg-slate-600 text-slate-200 disabled:opacity-50'
-                                }`}
-                            >
-                                <Icon name={isSaving ? "loader-2" : (shareStatus === 'success' ? "check" : "share-2")} className={isSaving ? "animate-spin" : ""} size={16} />
-                                {isSaving ? 'Menyimpan...' : (shareStatus === 'success' ? 'Link Disalin!' : 'Simpan & Share')}
+                            <button onClick={handleSave} className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium ${shareStatus === 'success' ? 'bg-emerald-600' : 'bg-slate-700 hover:bg-slate-600'}`}>
+                                <Icon name={isSaving ? "loader-2" : (shareStatus === 'success' ? "check" : "share-2")} className={isSaving ? "animate-spin" : ""} />
+                                {shareStatus === 'success' ? 'Link Disalin!' : 'Simpan'}
                             </button>
-                            <button 
-                                onClick={() => runCode()} 
-                                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-md font-bold text-sm transition-all shadow-lg active:scale-95 text-white"
-                            >
-                                <Icon name="play" size={16} /> RUN
+                            <button onClick={() => runCode()} className="bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-md font-bold text-sm shadow-lg transition-transform active:scale-95">
+                                <Icon name="play" className="mr-2" /> RUN
                             </button>
                         </div>
                     </header>
 
                     <main className="flex flex-1 overflow-hidden">
-                        <div className="w-1/2 flex flex-col border-r border-slate-700 bg-slate-900">
+                        <div className="w-1/2 flex flex-col border-r border-slate-700">
                             <div className="flex bg-slate-800/40 px-2 pt-2 border-b border-slate-800">
                                 {['html', 'css', 'js'].map(t => (
-                                    <button 
-                                        key={t} 
-                                        onClick={() => setActiveTab(t)} 
-                                        className={`px-6 py-2 text-xs font-bold uppercase rounded-t-md transition-all ${
-                                            activeTab === t 
-                                            ? 'bg-slate-900 text-blue-400 border-t-2 border-blue-500' 
-                                            : 'text-slate-500 hover:text-slate-300'
-                                        }`}
-                                    >
-                                        {t === 'js' ? 'JavaScript' : t.toUpperCase()}
+                                    <button key={t} onClick={() => setActiveTab(t)} className={`px-6 py-2 text-xs font-bold uppercase rounded-t-md ${activeTab === t ? 'bg-slate-900 text-blue-400 border-t-2 border-blue-500' : 'text-slate-500'}`}>
+                                        {t}
                                     </button>
                                 ))}
                             </div>
-                            <div className="flex-1 relative overflow-hidden">
-                                <textarea
-                                    key={`editor-${activeTab}`}
-                                    value={activeTab === 'html' ? html : activeTab === 'css' ? css : js}
-                                    onChange={e => {
-                                        const v = e.target.value;
-                                        if(activeTab === 'html') setHtml(v); 
-                                        else if(activeTab === 'css') setCss(v); 
-                                        else setJs(v);
-                                    }}
-                                    className="w-full h-full bg-transparent p-6 font-mono text-sm outline-none resize-none text-slate-300 leading-relaxed"
-                                    spellCheck="false"
-                                    placeholder={`Masukkan kode ${activeTab} Anda...`}
-                                />
-                            </div>
+                            <textarea
+                                value={activeTab === 'html' ? html : activeTab === 'css' ? css : js}
+                                onChange={e => activeTab === 'html' ? setHtml(e.target.value) : activeTab === 'css' ? setCss(e.target.value) : setJs(e.target.value)}
+                                className="flex-1 bg-transparent p-6 font-mono text-sm outline-none resize-none text-slate-300"
+                                spellCheck="false"
+                            />
                         </div>
-
                         <div className="w-1/2 flex flex-col bg-white">
-                            <div className="flex-1 relative bg-slate-50">
-                                {output ? (
-                                    <iframe 
-                                        key={output.length}
-                                        srcDoc={output} 
-                                        className="w-full h-full border-none shadow-inner bg-white" 
-                                        title="Preview"
-                                    />
-                                ) : (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 gap-4">
-                                        <Icon name="monitor" size={48} className="opacity-20" />
-                                        <p className="text-sm font-medium">Klik RUN untuk melihat hasil</p>
-                                    </div>
-                                )}
+                            <div className="flex-1 bg-slate-50">
+                                {output ? <iframe srcDoc={output} className="w-full h-full border-none" /> : <div className="h-full flex items-center justify-center text-slate-400">Klik RUN</div>}
                             </div>
-                            
-                            <div className="h-1/3 bg-slate-900 border-t border-slate-700 flex flex-col font-mono text-xs overflow-hidden">
-                                <div className="bg-slate-800 px-4 py-2 flex justify-between items-center text-slate-400 border-b border-slate-700 shrink-0">
-                                    <div className="flex items-center gap-2 uppercase tracking-widest text-[10px] font-bold">
-                                        <Icon name="terminal" size={12} /> Console
-                                    </div>
-                                    <button onClick={() => setLogs([])} className="hover:text-white text-[10px]">CLEAR</button>
-                                </div>
-                                <div className="flex-1 overflow-auto p-4 space-y-1 bg-slate-950/50">
-                                    {logs.length === 0 ? (
-                                        <div className="text-slate-700 italic">No logs...</div>
-                                    ) : (
-                                        logs.map(l => (
-                                            <div key={l.id} className="flex gap-2 text-emerald-400">
-                                                <span className="text-slate-600">[{new Date().toLocaleTimeString([], {hour12: false})}]</span>
-                                                <span className="text-blue-400 font-bold">&gt;</span>
-                                                <span className="break-all">{l.text}</span>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
+                            <div className="h-1/3 bg-slate-950 p-4 font-mono text-xs overflow-auto">
+                                <div className="text-slate-500 mb-2 border-b border-slate-800 pb-1">CONSOLE</div>
+                                {logs.map(l => <div key={l.id} className="text-emerald-400 mb-1">{'>'} {l.text}</div>)}
                             </div>
                         </div>
                     </main>
-                    
-                    <footer className="bg-slate-800 border-t border-slate-700 px-4 py-1 text-[10px] text-slate-500 flex justify-between">
-                        <span>Status: {user ? 'Connected' : 'Connecting...'}</span>
-                        <span>Cloud Code Editor v1.0.2</span>
-                    </footer>
                 </div>
             );
         };
