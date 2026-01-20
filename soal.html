@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Soal Al-Qur'an A5 (2-up)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Menggunakan Times New Roman untuk instruksi */
+        body { 
+            font-family: "Times New Roman", Times, serif; 
+        }
+        
+        .quran-text { 
+            font-family: 'Amiri', serif; 
+            direction: rtl; 
+            line-height: 1.8; 
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+            .no-print { display: none !important; }
+            .print-container {
+                display: flex;
+                width: 297mm;
+                height: 210mm;
+                padding: 10mm;
+                gap: 5mm; 
+            }
+            .a5-page {
+                width: 141mm; 
+                height: 190mm;
+                border: 1px dashed #ccc; 
+                padding: 5mm;
+                overflow: hidden; 
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            background: #525659;
+            padding: 40px;
+            min-width: fit-content;
+        }
+        
+        .a5-page {
+            background: white;
+            width: 148.5mm;
+            height: 210mm;
+            padding: 12mm; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dotted-line { 
+            border-bottom: 1px dotted #000; 
+            height: 1.2rem; 
+            margin-top: 0.1rem; 
+        }
+
+        .section-tight {
+            margin-bottom: 0.5rem !important;
+        }
+
+        /* Scrollbar kustom untuk panel kontrol */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Konfigurasi (No Print) -->
+    <header class="no-print bg-slate-800 text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <h1 class="font-bold text-lg">Quran Exam A5 (Dual Copy)</h1>
+            <div class="flex gap-4 items-center">
+                <label class="text-xs">Seri:</label>
+                <input type="text" id="inputSeri" value="01" oninput="updateSheet()" class="w-16 p-1 text-black rounded text-center font-bold">
+                <button onclick="window.print()" class="bg-blue-600 px-4 py-1 rounded font-bold hover:bg-blue-500 transition">🖨️ Cetak A4 (Landscape)</button>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-[11px]">
+            <div>
+                <label class="block mb-1 font-bold">Juz 4 (Halaman & Ayat):</label>
+                <select id="selectJuz4" onchange="updateSheet()" class="w-full p-1 text-black rounded"></select>
+                <label class="block mt-2 mb-1 font-bold">Juz 30:</label>
+                <select id="selectJuz30" onchange="updateSheet()" class="w-full p-1 text-black rounded"></select>
+            </div>
+            <div>
+                <label class="block mb-1 font-bold text-yellow-400 underline uppercase tracking-wider">Tajwid:</label>
+                <div id="tajwidCheckboxes" class="bg-white text-black p-2 rounded h-32 overflow-y-auto custom-scroll shadow-inner"></div>
+            </div>
+            <div>
+                <label class="block mb-1 font-bold text-emerald-400 underline uppercase tracking-wider">Ghorib:</label>
+                <div id="ghoribCheckboxes" class="bg-white text-black p-2 rounded h-32 overflow-y-auto custom-scroll shadow-inner"></div>
+            </div>
+            <div class="bg-slate-700 p-2 rounded border border-slate-600">
+                <p class="font-bold text-blue-300 mb-1">Panduan Cetak:</p>
+                <ol class="list-decimal list-inside space-y-1 opacity-80">
+                    <li>Pilih materi Tajwid & Ghorib.</li>
+                    <li>Klik tombol "Cetak".</li>
+                    <li>Pastikan Layout: <b>Landscape</b>.</li>
+                    <li>Gunakan kertas <b>A4</b>.</li>
+                    <li>Potong tengah untuk jadi 2 buku <b>A5</b>.</li>
+                </ol>
+            </div>
+        </div>
+    </header>
+
+    <div class="preview-container no-print" id="previewArea">
+        <!-- Render 2 copies here -->
+    </div>
+
+    <!-- Hidden template used for generating copies -->
+    <template id="pageTemplate">
+        <div class="a5-page">
+            <!-- Header -->
+            <div class="border-b-2 border-black pb-1 mb-2 flex justify-between items-start">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base font-bold uppercase italic">Evaluasi Quran</h2>
+                        <span class="text-[10px] border border-black px-1 font-bold">SERI #<span class="val-seri">01</span></span>
+                    </div>
+                    <div class="text-[9px] mt-1 space-y-0.5">
+                        <div>Nama : ________________ Kelas: _______</div>
+                        <div>Tgl : ________________ Guru: _______</div>
+                    </div>
+                </div>
+                <div class="border-2 border-black p-1 text-center min-w-[45px]">
+                    <span class="text-[7px] block font-bold">NILAI</span>
+                    <span class="text-lg font-bold">/100</span>
+                </div>
+            </div>
+
+            <div class="flex-1 space-y-2 text-[10px]">
+                <!-- Soal 1 -->
+                <div class="section-tight">
+                    <p class="italic font-bold"><span class="inline-block w-3">1.</span> Materi Qira'ah & Kelancaran (Juz 4):</p>
+                    <div class="val-juz4 quran-text text-lg border border-gray-300 p-2 bg-gray-50 text-right mt-1"></div>
+                    <div class="border border-dashed border-gray-400 mt-1 p-1">
+                        <span class="text-[7px] text-gray-500 italic uppercase">Catatan Guru:</span>
+                        <div class="h-6"></div>
+                    </div>
+                </div>
+
+                <!-- Soal 2 -->
+                <div class="section-tight">
+                    <p class="italic font-bold"><span class="inline-block w-3">2.</span> Identifikasi Hukum Tajwid pada ayat di atas:</p>
+                    <p class="text-[8px] text-gray-600 italic">Instruksi: Cari contoh dan jelaskan pengertian hukum tajwid berikut.</p>
+                    <div class="val-tajwid-list mt-1 space-y-1"></div>
+                </div>
+
+                <!-- Soal 3 -->
+                <div class="section-tight">
+                    <p class="italic font-bold"><span class="inline-block w-3">3.</span> Materi Ghorib (Jelaskan Pengertiannya):</p>
+                    <div class="val-ghorib space-y-1 mt-1"></div>
+                </div>
+
+                <!-- Soal 4 -->
+                <div class="section-tight">
+                    <p class="italic font-bold"><span class="inline-block w-3">4.</span> Kitabah (Salinlah ayat Juz 30 berikut):</p>
+                    <div class="border border-black mt-1">
+                        <div class="val-juz30 quran-text text-base p-1 bg-gray-100 text-right border-b border-black"></div>
+                        <div class="h-24 bg-white p-1 space-y-5">
+                            <div class="border-b border-gray-200"></div>
+                            <div class="border-b border-gray-200"></div>
+                            <div class="border-b border-gray-200"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-1 pt-1 border-t border-gray-100 flex justify-between text-[7px] font-bold text-gray-400">
+                <span>* Kumpulkan lembar ini untuk mendapatkan poin reward.</span>
+                <span>ID-SERI-VERIFIKASI-#<span class="val-seri-footer">01</span></span>
+            </div>
+        </div>
+    </template>
+
+    <div class="print-only print-container" id="printArea">
+        <!-- Will be filled by JS -->
+    </div>
+
+    <script>
+        const database = {
+            juz4: [
+                { id: '62-1', label: 'Hal 62 | Ali Imran 92-94', text: 'لَنْ تَنَالُوا الْبِرَّ حَتَّىٰ تُنْفِقُوا مِمَّا تُحِبُّونَ ۚ وَمَا تُنْفِقُوا مِنْ شَيْءٍ فَإِنَّ اللَّهَ بِهِ عَلِيمٌ * كُلُّ الطَّعَامِ كَانَ حِلًّا لِبَنِي إِسْرَائِيلَ إِلَّا مَا حَرَّمَ إِسْرَائِيلُ' },
+                { id: '62-2', label: 'Hal 62 | Ali Imran 95-98', text: 'قُلْ صَدَقَ اللَّهُ ۗ فَاتَّبِعُوا مِلَّةَ إِبْرَاهِيمَ حَنِيفًا وَمَا كَانَ مِنَ الْمُشْرِكِينَ * إِنَّ أَوَّلَ بَيْتٍ وُضِعَ لِلنَّاسِ لَلَّذِي بِبَكَّةَ مُبَارَكًا' },
+                { id: '62-3', label: 'Hal 62 | Ali Imran 98-100', text: 'قُلْ يَا أَهْلَ الْكِتَابِ لِمَ تَكْفُرُونَ بِآيَاتِ اللَّهِ وَاللَّهُ شَهِيدٌ عَلَىٰ مَا تَعْمَلُونَ * قُلْ يَا أَهْلَ الْكِتَابِ لِمَ تَصُدُّونَ عن سبيل الله' },
+                { id: '63-1', label: 'Hal 63 | Ali Imran 101-103', text: 'وَكَيْفَ تَكْفURُونَ وَأَنْتُمْ تُتْلَىٰ عَلَيْكُمْ آيَاتُ اللَّهِ وَفِيكُمْ رَسُولُهُ ۗ وَمَنْ يَعْتَصِمْ بِاللَّهِ فَقَدْ هُدِيَ إِلَىٰ صِرَاطٍ مُسْتَقِيمٍ' },
+                { id: '63-2', label: 'Hal 63 | Ali Imran 104-106', text: 'وَلْتَكُنْ مِنْكُمْ أُمَّةٌ يَدْعُونَ إِلَى الْخَيْرِ وَيَأْمُرُونَ بِالْمَعْرُوفِ وَيَنْهَوْنَ عَنِ الْمُنْكَرِ ۚ وَأُولَٰئِكَ هُمُ الْمُفْلِحُونَ' },
+                { id: '63-3', label: 'Hal 63 | Ali Imran 105-108', text: 'وَلَا تَكُونُوا كَالَّذِينَ تَفَرَّقُوا وَاخْتَلَفُوا مِنْ بَعْدِ مَا جَاءَهُمُ الْبَيِّنَاتُ ۚ وَأُولَٰئِكَ لَهُمْ عَذَابٌ عَظِيمٌ' }
+            ],
+            juz30: [
+                { id: '1', label: 'An-Naba: 1-2', text: 'عَمَّ يَتَسَاءَلُونَ * عَنِ النَّبَإِ الْعَظِيمِ' },
+                { id: '2', label: 'Al-Ikhlas: 1-4', text: 'قُلْ هُوَ اللَّهُ أَحَدٌ * اللَّهُ الصَّمَدُ * لَمْ يَلِدْ وَلَمْ يُولَدْ * وَلَمْ يَكُنْ لَهُ كُfُوًا أَحَدٌ' }
+            ],
+            tajwid: [
+                'Ghunnah', 'Izhar Halqi', 'Idgham Bighunnah', 'Idgham Bilaghunnah', 'Iqlab', 'Ikhfa Haqiqi', 
+                'Izhar Syafawi', 'Idgham Mitsli', 'Ikhfa Syafawi', 'Idgham Mutamatsilain', 'Idgham Mutajanisain', 
+                'Idgham Mutaqaribain', 'Izhar Wajib', 'Izhar Qamariyah', 'Idgham Syamsiyyah', 'Tafkhim (Lafzul Jalalah)', 
+                'Tarqiq (Lafzul Jalalah)', 'Tafkhim (Hukum Ra)', 'Tarqiq (Hukum Ra)', 'Ra yang boleh dibaca Tafkhim atau Tarqiq', 
+                'Qalqalah Sughra', 'Qalqalah Kubra', 'Mad Thabi’i', 'Mad Wajib Muttashil', 'Mad Jaiz Munfashil', 
+                'Mad Arid Lissukun', 'Mad Iwadh', 'Mad Shilah Qashirah', 'Mad Shilah Thawilah', 'Mad Badal', 
+                'Mad Tamkin', 'Mad Lin', 'Mad Lazim Harfiy Mutsaqqal', 'Mad Lazim Harfiy Mukhaffaf', 
+                'Mad Lazim Kilmi Mutsaqqal', 'Mad Lazim Kilmi Mukhaffaf', 'Mad Farqi'
+            ],
+            ghorib: [
+                'Isymam', 'Imalah', 'Tashil', 'Iltiqous Sakinain', 'Shifrul Mustathil', 
+                'Shifrul Mustadir', 'Saktah', 'Badal/Ibdal', 'Baraatun'
+            ]
+        };
+
+        function init() {
+            const s4 = document.getElementById('selectJuz4');
+            database.juz4.forEach(i => s4.add(new Option(i.label, i.id)));
+            
+            const s30 = document.getElementById('selectJuz30');
+            database.juz30.forEach(i => s30.add(new Option(i.label, i.id)));
+            
+            const tc = document.getElementById('tajwidCheckboxes');
+            database.tajwid.sort().forEach(i => {
+                tc.innerHTML += `<div class="flex items-center gap-1 hover:bg-slate-50 transition p-1 rounded"><input type="checkbox" name="tajwid" value="${i}" onchange="updateSheet()" id="t_${i.replace(/[^\w]/g, '')}"> <label for="t_${i.replace(/[^\w]/g, '')}" class="cursor-pointer">${i}</label></div>`;
+            });
+
+            const gc = document.getElementById('ghoribCheckboxes');
+            database.ghorib.sort().forEach(i => {
+                gc.innerHTML += `<div class="flex items-center gap-1 hover:bg-slate-50 transition p-1 rounded"><input type="checkbox" name="ghorib" value="${i}" onchange="updateSheet()" id="g_${i.replace(/[^\w]/g, '')}"> <label for="g_${i.replace(/[^\w]/g, '')}" class="cursor-pointer">${i}</label></div>`;
+            });
+            
+            updateSheet();
+        }
+
+        function updateSheet() {
+            const seri = document.getElementById('inputSeri').value || "01";
+            const juz4 = database.juz4.find(i => i.id === document.getElementById('selectJuz4').value).text;
+            const juz30 = database.juz30.find(i => i.id === document.getElementById('selectJuz30').value).text;
+            
+            const selectedTajwid = Array.from(document.querySelectorAll('input[name="tajwid"]:checked')).map(cb => cb.value);
+            const selectedGhorib = Array.from(document.querySelectorAll('input[name="ghorib"]:checked')).map(cb => cb.value);
+
+            const previewArea = document.getElementById('previewArea');
+            const printArea = document.getElementById('printArea');
+            previewArea.innerHTML = '';
+            printArea.innerHTML = '';
+
+            for (let k = 0; k < 2; k++) {
+                const template = document.getElementById('pageTemplate').content.cloneNode(true);
+                
+                template.querySelectorAll('.val-seri').forEach(el => el.innerText = seri);
+                template.querySelectorAll('.val-seri-footer').forEach(el => el.innerText = seri);
+                template.querySelector('.val-juz4').innerText = juz4;
+                template.querySelector('.val-juz30').innerText = juz30;
+                
+                // Tajwid List Render (No Ayat Box)
+                const tContainer = template.querySelector('.val-tajwid-list');
+                if(selectedTajwid.length > 0) {
+                    selectedTajwid.forEach(t => {
+                        tContainer.innerHTML += `<div><span class="font-bold underline">${t}:</span> <div class="dotted-line"></div></div>`;
+                    });
+                } else {
+                    tContainer.innerHTML = '<div class="italic text-gray-400 border border-gray-100 p-2 text-center rounded">Pilih materi Tajwid di panel atas...</div>';
+                }
+
+                // Ghorib List Render
+                const gContainer = template.querySelector('.val-ghorib');
+                if(selectedGhorib.length > 0) {
+                    selectedGhorib.forEach(g => {
+                        gContainer.innerHTML += `<div><span class="font-bold underline">${g}:</span> <div class="dotted-line"></div></div>`;
+                    });
+                } else {
+                    gContainer.innerHTML = '<div class="italic text-gray-400 border border-gray-100 p-2 text-center rounded">Pilih materi Ghorib di panel atas...</div>';
+                }
+
+                const previewClone = template.cloneNode(true);
+                previewArea.appendChild(previewClone);
+                printArea.appendChild(template);
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

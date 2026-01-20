@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembuat Daftar Presensi - Landscape</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Mengatur font Times New Roman */
+        body {
+            font-family: "Times New Roman", Times, serif;
+        }
+
+        /* Pengaturan Cetak Lanskap */
+        @media print {
+            .no-print {
+                display: none;
+            }
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .print-container {
+                box-shadow: none;
+                margin: 0;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+            
+            @page {
+                size: landscape;
+                margin: 1cm;
+            }
+            
+            .page-a4 { size: A4 landscape; }
+            .page-f4 { size: 215mm 330mm landscape; }
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 4px 2px;
+            text-align: center;
+            font-size: 10pt; /* Ukuran font sedikit dikecilkan agar lebih muat banyak */
+            overflow: hidden;
+        }
+        
+        /* Memaksa nama siswa tidak terpotong dan font mengecil otomatis jika terlalu panjang */
+        .nama-siswa {
+            text-align: left !important;
+            padding-left: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 9pt; /* Ukuran default nama sedikit lebih kecil */
+        }
+        
+        /* Bingkai terpadu untuk kata KELAS dan nilainya */
+        .kelas-wrapper {
+            border: 1px solid #000;
+            padding: 4px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+        }
+
+        .landscape-wrapper {
+            width: 100%;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto bg-white p-8 shadow-lg rounded-lg print-container landscape-wrapper">
+        <!-- Form Input -->
+        <div class="no-print mb-8 border-b pb-6 font-sans">
+            <h2 class="text-xl font-bold mb-4 text-blue-600">Konfigurasi Daftar Hadir</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                    <label class="block font-medium">Mata Pelajaran</label>
+                    <input type="text" id="inputMapel" placeholder="Contoh: Matematika" class="w-full border p-2 rounded mt-1" oninput="updatePreview()">
+                </div>
+                <div>
+                    <label class="block font-medium">Lembaga</label>
+                    <input type="text" id="inputLembaga" placeholder="Contoh: SMA Negeri 1" class="w-full border p-2 rounded mt-1" oninput="updatePreview()">
+                </div>
+                <div>
+                    <label class="block font-medium">Tahun Pelajaran</label>
+                    <input type="text" id="inputTahun" placeholder="Contoh: 2024/2025" class="w-full border p-2 rounded mt-1" oninput="updatePreview()">
+                </div>
+                <div>
+                    <label class="block font-medium">Kelas</label>
+                    <input type="text" id="inputKelas" placeholder="Contoh: XII MIPA 1" class="w-full border p-2 rounded mt-1" oninput="updatePreview()">
+                </div>
+                <div>
+                    <label class="block font-medium">Nama Guru</label>
+                    <input type="text" id="inputGuru" placeholder="Nama Guru" class="w-full border p-2 rounded mt-1" oninput="updatePreview()">
+                </div>
+                <div>
+                    <label class="block font-medium">Ukuran Kertas</label>
+                    <select id="inputPaper" class="w-full border p-2 rounded mt-1" onchange="updatePreview()">
+                        <option value="a4">A4 Landscape</option>
+                        <option value="f4">F4 Landscape</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-medium">Jumlah Kolom Tanggal</label>
+                    <input type="number" id="inputTanggalCount" value="25" min="1" max="31" class="w-full border p-2 rounded mt-1" oninput="updatePreview()">
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <label class="block font-medium text-sm">Daftar Nama Siswa (Satu nama per baris)</label>
+                <textarea id="inputSiswa" rows="4" class="w-full border p-2 rounded mt-1 text-sm" placeholder="Masukkan nama siswa..." oninput="updatePreview()"></textarea>
+            </div>
+
+            <button onclick="window.print()" class="mt-6 bg-green-600 text-white px-8 py-3 rounded hover:bg-green-700 font-bold flex items-center gap-2 transition-all shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                CETAK SEKARANG
+            </button>
+        </div>
+
+        <!-- Area Pratinjau Cetak -->
+        <div id="printArea">
+            <!-- Header -->
+            <div class="text-center mb-6">
+                <h1 class="text-xl font-bold uppercase leading-tight">Daftar Hadir <span id="displayMapel">[Mata Pelajaran]</span></h1>
+                <h2 class="text-lg font-bold uppercase leading-tight">
+                    <span id="displayLembaga">[LEMBAGA]</span> - TAHUN PELAJARAN <span id="displayTahun">[TAHUN PELAJARAN]</span>
+                </h2>
+            </div>
+
+            <!-- Informasi -->
+            <div class="flex justify-between mb-4 text-base items-end">
+                <div class="w-1/2">
+                    <table style="border:none; width: auto;">
+                        <tr style="border:none;">
+                            <td style="border:none; text-align:left; padding:0 10px 0 0; width:140px;">Nama Guru</td>
+                            <td style="border:none; text-align:left; padding:0 5px;">:</td>
+                            <td style="border:none; text-align:left; padding:0; font-weight:bold;"><span id="displayGuru">................................</span></td>
+                        </tr>
+                        <tr style="border:none;">
+                            <td style="border:none; text-align:left; padding:0;">Mata Pelajaran</td>
+                            <td style="border:none; text-align:left; padding:0 5px;">:</td>
+                            <td style="border:none; text-align:left; padding:0;"><span id="displayMapelSide">................................</span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="w-1/2 text-right">
+                    <div class="kelas-wrapper">
+                        <span>KELAS</span>
+                        <span id="displayKelas">................</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel -->
+            <table id="mainTable">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 30px;">No</th>
+                        <th rowspan="2" style="width: 200px;">Nama Siswa</th>
+                        <th id="tanggalHeader">Kehadiran / Tanggal</th>
+                        <th colspan="3" style="width: 75px;">Jumlah</th>
+                    </tr>
+                    <tr id="subHeader">
+                        <!-- JS generated -->
+                    </tr>
+                </thead>
+                <tbody id="siswaTableBody">
+                    <!-- JS generated -->
+                </tbody>
+                <tfoot>
+                    <tr id="footerRow" class="font-bold">
+                        <td colspan="2" class="text-right px-4 uppercase">Jumlah (S, I, A)</td>
+                        <!-- JS generated -->
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function updatePreview() {
+            // Update Header & Info
+            const mapelInput = document.getElementById('inputMapel').value;
+            const mapel = (mapelInput || "[Mata Pelajaran]").toUpperCase();
+            document.getElementById('displayMapel').innerText = mapel;
+            document.getElementById('displayMapelSide').innerText = mapelInput || "................................";
+            
+            const lembaga = (document.getElementById('inputLembaga').value || "[Lembaga]").toUpperCase();
+            document.getElementById('displayLembaga').innerText = lembaga;
+
+            const tahun = (document.getElementById('inputTahun').value || "[Tahun Pelajaran]").toUpperCase();
+            document.getElementById('displayTahun').innerText = tahun;
+
+            const kelas = (document.getElementById('inputKelas').value || "................").toUpperCase();
+            document.getElementById('displayKelas').innerText = kelas;
+
+            const guru = document.getElementById('inputGuru').value || "................................";
+            document.getElementById('displayGuru').innerText = guru;
+
+            // Update Ukuran Kertas
+            const paper = document.getElementById('inputPaper').value;
+            document.body.className = `bg-gray-100 min-h-screen p-4 md:p-8 page-${paper}`;
+
+            // Update Kolom Tanggal
+            const colCount = parseInt(document.getElementById('inputTanggalCount').value) || 25;
+            document.getElementById('tanggalHeader').colSpan = colCount;
+            
+            const subHeader = document.getElementById('subHeader');
+            let subHtml = "";
+            for(let i=1; i<=colCount; i++) {
+                subHtml += `<th style="width: auto;"></th>`;
+            }
+            subHtml += `<th style="width: 25px;">S</th><th style="width: 25px;">I</th><th style="width: 25px;">A</th>`;
+            subHeader.innerHTML = subHtml;
+
+            // Baris Siswa
+            const siswaText = document.getElementById('inputSiswa').value.trim();
+            const siswaList = siswaText ? siswaText.split('\n') : ["Contoh Nama Siswa yang Sangat Panjang Sekali Agar Terlihat Penyesuaiannya"];
+            const tbody = document.getElementById('siswaTableBody');
+            
+            let tableHtml = "";
+            siswaList.forEach((nama, index) => {
+                let emptyCols = "";
+                for(let j=0; j<colCount; j++) emptyCols += `<td></td>`;
+                tableHtml += `<tr>
+                    <td>${index + 1}</td>
+                    <td class="nama-siswa">${nama}</td>
+                    ${emptyCols}
+                    <td></td><td></td><td></td>
+                </tr>`;
+            });
+            tbody.innerHTML = tableHtml;
+
+            // Footer Row
+            const footerRow = document.getElementById('footerRow');
+            let footerHtml = `<td colspan="2" class="text-right px-4 uppercase">Jumlah (S, I, A)</td>`;
+            for(let i=0; i<colCount; i++) footerHtml += `<td></td>`;
+            footerHtml += `<td></td><td></td><td></td>`;
+            footerRow.innerHTML = footerHtml;
+        }
+
+        window.onload = updatePreview;
+    </script>
+</body>
+</html>
