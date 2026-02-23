@@ -7,19 +7,24 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <!-- Font Quran (opsional, agar mirip mushaf) -->
+  <!-- Font Quran (Amiri sebagai contoh, bisa diganti dengan Uthmani) -->
   <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Amiri', serif; }
+    .ayah-number {
+      font-family: 'Amiri', serif;
+      margin: 0 4px;
+      color: #2563eb; /* biru Tailwind */
+    }
   </style>
 </head>
 <body class="bg-gray-100 flex flex-col items-center p-6">
 
-  <div class="w-full max-w-2xl bg-white shadow-lg rounded-lg p-6">
-    <h1 class="text-2xl font-bold text-center mb-4">Halaman Quran</h1>
+  <div class="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6">
+    <h1 class="text-2xl font-bold text-center mb-4">Al-Qur'an Per Halaman</h1>
     
     <!-- Kontainer ayat -->
-    <div id="ayahs" class="space-y-4 text-right text-xl leading-loose"></div>
+    <div id="quran-page" class="text-right text-2xl leading-loose"></div>
 
     <!-- Navigasi -->
     <div class="flex justify-between mt-6">
@@ -40,13 +45,13 @@
       const data = await res.json();
       const ayahs = data.data.ayahs;
 
-      const container = document.getElementById("ayahs");
-      container.innerHTML = "";
+      // Gabungkan semua ayat jadi satu string dengan nomor ayat
+      let pageText = "";
       ayahs.forEach(ayah => {
-        const p = document.createElement("p");
-        p.textContent = ayah.text;
-        container.appendChild(p);
+        pageText += ayah.text + " ﴿" + ayah.numberInSurah + "﴾ ";
       });
+
+      document.getElementById("quran-page").textContent = pageText;
     }
 
     document.getElementById("prev").addEventListener("click", () => {
@@ -57,7 +62,7 @@
     });
 
     document.getElementById("next").addEventListener("click", () => {
-      if (currentPage < 604) { // total halaman mushaf Madinah
+      if (currentPage < 604) {
         currentPage++;
         loadPage(currentPage);
       }
