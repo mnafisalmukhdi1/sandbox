@@ -7,27 +7,22 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Material Icons -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <!-- Font Quran (Amiri sebagai contoh, bisa diganti dengan Uthmani) -->
+  <!-- Font Quran -->
   <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Amiri', serif; }
-    .ayah-number {
-      font-family: 'Amiri', serif;
-      margin: 0 4px;
-      color: #2563eb; /* biru Tailwind */
-    }
   </style>
 </head>
 <body class="bg-gray-100 flex flex-col items-center p-6">
 
   <div class="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6">
-    <h1 class="text-2xl font-bold text-center mb-4">Al-Qur'an Per Halaman</h1>
+    <h1 class="text-2xl font-bold text-center mb-4">القرآن الكريم</h1>
     
     <!-- Kontainer ayat -->
     <div id="quran-page" class="text-right text-2xl leading-loose"></div>
 
-    <!-- Navigasi -->
-    <div class="flex justify-between mt-6">
+    <!-- Navigasi di tengah -->
+    <div class="flex justify-center mt-6 space-x-6">
       <button id="prev" class="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
         <span class="material-icons mr-2">chevron_left</span> Sebelumnya
       </button>
@@ -40,15 +35,20 @@
   <script>
     let currentPage = 1;
 
+    // Fungsi konversi angka biasa ke angka Arab
+    function toArabicNumber(num) {
+      const arabicDigits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+      return String(num).split('').map(d => arabicDigits[d]).join('');
+    }
+
     async function loadPage(page) {
       const res = await fetch(`https://api.alquran.cloud/v1/page/${page}/quran-uthmani`);
       const data = await res.json();
       const ayahs = data.data.ayahs;
 
-      // Gabungkan semua ayat jadi satu string dengan nomor ayat
       let pageText = "";
       ayahs.forEach(ayah => {
-        pageText += ayah.text + " ﴿" + ayah.numberInSurah + "﴾ ";
+        pageText += ayah.text + " ﴿" + toArabicNumber(ayah.numberInSurah) + "﴾ ";
       });
 
       document.getElementById("quran-page").textContent = pageText;
