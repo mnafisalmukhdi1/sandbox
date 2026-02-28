@@ -89,4 +89,175 @@
         { h: 'د', s: ['Jahr', 'Syiddah', 'Istifal', 'Infitah', 'Ishmat', 'Qalqalah'] },
         { h: 'ذ', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat'] },
         { h: 'ر', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq', 'Inhiraf', 'Takrir'] },
-        { h: 'ز', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infit
+        { h: 'ز', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Shafir'] },
+        { h: 'س', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Shafir'] },
+        { h: 'ش', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Tafasysyi'] },
+        { h: 'ص', s: ['Hams', 'Rakhawah', 'Isti\'la', 'Ithbaq', 'Ishmat', 'Shafir'] },
+        { h: 'ض', s: ['Jahr', 'Rakhawah', 'Isti\'la', 'Ithbaq', 'Ishmat', 'Istitholah'] },
+        { h: 'ط', s: ['Jahr', 'Syiddah', 'Isti\'la', 'Ithbaq', 'Ishmat', 'Qalqalah'] },
+        { h: 'ظ', s: ['Jahr', 'Rakhawah', 'Isti\'la', 'Ithbaq', 'Ishmat'] },
+        { h: 'ع', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'غ', s: ['Jahr', 'Rakhawah', 'Isti\'la', 'Infitah', 'Ishmat'] },
+        { h: 'ف', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Idzlaq'] },
+        { h: 'ق', s: ['Jahr', 'Syiddah', 'Isti\'la', 'Infitah', 'Ishmat', 'Qalqalah'] },
+        { h: 'ك', s: ['Hams', 'Syiddah', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'ل', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq', 'Inhiraf'] },
+        { h: 'م', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq'] },
+        { h: 'ن', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq'] },
+        { h: 'و', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Lin'] },
+        { h: 'ه', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'ي', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Lin'] }
+    ];
+
+    const traitGroups = [
+        { name: 'hamsjahr', traits: ['Hams', 'Jahr'] },
+        { name: 'syiddah', traits: ['Syiddah', 'Tawassuth', 'Rakhawah'] },
+        { name: 'istila', traits: ['Isti\'la', 'Istifal'] },
+        { name: 'ithbaq', traits: ['Ithbaq', 'Infitah'] },
+        { name: 'idzlaq', traits: ['Idzlaq', 'Ishmat'] },
+        { name: 'extra', traits: ['Shafir', 'Qalqalah', 'Lin', 'Inhiraf', 'Takrir', 'Tafasysyi', 'Istitholah'] }
+    ];
+
+    let currentIndex = 0;
+    let currentMode = 'study';
+    let selectedTraits = [];
+    let score = 0;
+
+    function startMode(mode) {
+        currentMode = mode;
+        document.getElementById('menu').classList.add('hidden');
+        document.getElementById('game-container').classList.remove('hidden');
+        currentIndex = 0;
+        
+        if (mode === 'play') {
+            document.getElementById('quiz-controls').classList.remove('hidden');
+            document.getElementById('nav-controls').classList.add('hidden');
+            document.getElementById('score-display').classList.remove('hidden');
+            score = 0;
+            updateScore();
+            dataHuruf.sort(() => Math.random() - 0.5);
+        } else {
+            document.getElementById('quiz-controls').classList.add('hidden');
+            document.getElementById('nav-controls').classList.remove('hidden');
+            document.getElementById('score-display').classList.add('hidden');
+        }
+        renderCard();
+    }
+
+    function renderCard() {
+        const item = dataHuruf[currentIndex];
+        document.getElementById('char-display').innerText = item.h;
+        document.getElementById('progress').innerText = `${currentIndex + 1} / ${dataHuruf.length}`;
+        
+        const traitsList = document.getElementById('traits-list');
+        traitsList.innerHTML = item.s.map(s => `<span class="bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-xs font-bold">${s}</span>`).join('');
+
+        if (currentMode === 'play') {
+            const optionsGrid = document.getElementById('options-grid');
+            selectedTraits = [];
+            let html = '';
+            
+            traitGroups.forEach((group) => {
+                html += `<div class="flex flex-wrap gap-2 justify-center border-b border-slate-100 pb-3" data-group="${group.name}">`;
+                group.traits.forEach(t => {
+                    html += `
+                        <button onclick="toggleTrait('${t}', this, '${group.name}')" 
+                            class="trait-opt border border-slate-200 px-2 py-3 rounded-xl text-[11px] md:text-sm bg-white hover:bg-slate-50 transition-all flex-1 min-w-[80px] font-medium text-slate-700 shadow-sm">
+                            ${t}
+                        </button>`;
+                });
+                html += `</div>`;
+            });
+            optionsGrid.innerHTML = html;
+            document.getElementById('card-inner').classList.remove('flipped');
+            document.getElementById('submit-btn').innerText = "Periksa Jawaban";
+            document.getElementById('submit-btn').onclick = checkAnswer;
+        }
+    }
+
+    function toggleTrait(trait, el, groupName) {
+        const group = traitGroups.find(g => g.name === groupName);
+        const isExtra = groupName === 'extra';
+
+        if (selectedTraits.includes(trait)) {
+            // Unselect
+            selectedTraits = selectedTraits.filter(t => t !== trait);
+            el.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600', 'shadow-emerald-200');
+            el.classList.add('bg-white', 'text-slate-700');
+        } else {
+            // Jika bukan grup 'extra', hapus pilihan lain dalam satu baris
+            if (!isExtra) {
+                const siblingButtons = el.parentElement.querySelectorAll('button');
+                siblingButtons.forEach(btn => {
+                    btn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600', 'shadow-emerald-200');
+                    btn.classList.add('bg-white', 'text-slate-700');
+                });
+                // Hapus semua trait dari grup ini yang mungkin sudah ada di selectedTraits
+                selectedTraits = selectedTraits.filter(t => !group.traits.includes(t));
+            }
+            
+            // Select new
+            selectedTraits.push(trait);
+            el.classList.remove('bg-white', 'text-slate-700');
+            el.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600', 'shadow-md', 'shadow-emerald-200');
+        }
+    }
+
+    function checkAnswer() {
+        const correctTraits = [...dataHuruf[currentIndex].s].sort();
+        const userTraits = [...selectedTraits].sort();
+        
+        // Cek kecocokan
+        const isCorrect = JSON.stringify(correctTraits) === JSON.stringify(userTraits);
+
+        document.getElementById('card-inner').classList.add('flipped');
+        
+        if (isCorrect) {
+            score += 10;
+            updateScore();
+            alert("Maa syaa Allah! Jawaban Kamu Benar.");
+        } else {
+            alert("Kurang tepat. Silakan lihat sifat yang benar di kartu.");
+        }
+        
+        document.getElementById('submit-btn').innerText = "Selanjutnya";
+        document.getElementById('submit-btn').onclick = nextCard;
+    }
+
+    function backToMenu() {
+        document.getElementById('menu').classList.remove('hidden');
+        document.getElementById('game-container').classList.add('hidden');
+        document.getElementById('card-inner').classList.remove('flipped');
+    }
+
+    function updateScore() {
+        document.getElementById('score-display').innerText = `Skor: ${score}`;
+    }
+
+    function handleCardClick() {
+        if (currentMode === 'study') {
+            document.getElementById('card-inner').classList.toggle('flipped');
+        }
+    }
+
+    function nextCard() {
+        if (currentIndex < dataHuruf.length - 1) {
+            currentIndex++;
+            document.getElementById('card-inner').classList.remove('flipped');
+            setTimeout(renderCard, 300);
+        } else {
+            alert(`Selesai! Skor akhir Anda: ${score}`);
+            backToMenu();
+        }
+    }
+
+    function prevCard() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            document.getElementById('card-inner').classList.remove('flipped');
+            setTimeout(renderCard, 300);
+        }
+    }
+</script>
+</body>
+</html>
