@@ -30,12 +30,12 @@
                 <span class="block text-lg font-bold text-emerald-700">Mode Belajar</span>
                 <span class="text-sm text-slate-500">Lihat huruf dan pelajari sifatnya</span>
             </div>
-            <span class="material-icons text-emerald-500 fontSize-large">menu_book</span>
+            <span class="material-icons text-emerald-500">menu_book</span>
         </button>
         <button onclick="startMode('play')" class="w-full bg-emerald-600 p-6 rounded-2xl shadow-sm hover:bg-emerald-700 transition flex items-center justify-between text-white">
             <div class="text-left">
                 <span class="block text-lg font-bold">Mode Bermain</span>
-                <span class="text-sm text-emerald-100">Tebak sifat dari huruf yang muncul</span>
+                <span class="text-sm text-emerald-100">Pilih sifat yang tepat</span>
             </div>
             <span class="material-icons">extension</span>
         </button>
@@ -50,22 +50,20 @@
             <div id="score-display" class="hidden text-emerald-600 font-bold">Skor: 0</div>
         </div>
 
-        <div class="card-flip w-full h-80 relative cursor-pointer" id="flashcard" onclick="handleCardClick()">
+        <div class="card-flip w-full h-64 relative cursor-pointer" id="flashcard" onclick="handleCardClick()">
             <div class="card-inner w-full h-full relative shadow-xl rounded-3xl" id="card-inner">
                 <div class="card-front bg-white flex items-center justify-center rounded-3xl border-2 border-slate-100">
-                    <span id="char-display" class="arabic text-9xl text-slate-800">أ</span>
+                    <span id="char-display" class="arabic text-8xl text-slate-800">أ</span>
                 </div>
                 <div class="card-back bg-emerald-50 flex flex-col items-center justify-center rounded-3xl border-2 border-emerald-200 p-6 overflow-y-auto">
-                    <h3 class="text-emerald-800 font-bold mb-3 underline">Sifat Huruf:</h3>
-                    <div id="traits-list" class="flex flex-wrap justify-center gap-2">
-                        </div>
+                    <h3 class="text-emerald-800 font-bold mb-3 underline">Jawaban Benar:</h3>
+                    <div id="traits-list" class="flex flex-wrap justify-center gap-2"></div>
                 </div>
             </div>
         </div>
 
-        <div id="quiz-controls" class="mt-8 hidden">
-            <p class="text-center text-sm text-slate-500 mb-4">Pilih semua sifat yang benar:</p>
-            <div id="options-grid" class="grid grid-cols-2 gap-2">
+        <div id="quiz-controls" class="mt-6 hidden">
+            <div id="options-grid" class="space-y-3">
                 </div>
             <button onclick="checkAnswer()" id="submit-btn" class="w-full mt-6 bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg">Periksa Jawaban</button>
         </div>
@@ -109,7 +107,14 @@
         { h: 'ي', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Lin'] }
     ];
 
-    const allTraits = ['Hams', 'Jahr', 'Syiddah', 'Tawassuth', 'Rakhawah', 'Isti\'la', 'Istifal', 'Ithbaq', 'Infitah', 'Idzlaq', 'Ishmat', 'Shafir', 'Qalqalah', 'Lin', 'Inhiraf', 'Takrir', 'Tafasysyi', 'Istitholah'];
+    const traitGroups = [
+        ['Hams', 'Jahr'],
+        ['Syiddah', 'Tawassuth', 'Rakhawah'],
+        ['Isti\'la', 'Istifal'],
+        ['Ithbaq', 'Infitah'],
+        ['Idzlaq', 'Ishmat'],
+        ['Shafir', 'Qalqalah', 'Lin', 'Inhiraf', 'Takrir', 'Tafasysyi', 'Istitholah']
+    ];
 
     let currentIndex = 0;
     let currentMode = 'study';
@@ -120,6 +125,7 @@
         currentMode = mode;
         document.getElementById('menu').classList.add('hidden');
         document.getElementById('game-container').classList.remove('hidden');
+        currentIndex = 0;
         
         if (mode === 'play') {
             document.getElementById('quiz-controls').classList.remove('hidden');
@@ -127,7 +133,7 @@
             document.getElementById('score-display').classList.remove('hidden');
             score = 0;
             updateScore();
-            dataHuruf.sort(() => Math.random() - 0.5); // Shuffle for play
+            dataHuruf.sort(() => Math.random() - 0.5);
         } else {
             document.getElementById('quiz-controls').classList.add('hidden');
             document.getElementById('nav-controls').classList.remove('hidden');
@@ -136,39 +142,35 @@
         renderCard();
     }
 
-    function backToMenu() {
-        document.getElementById('menu').classList.remove('hidden');
-        document.getElementById('game-container').classList.add('hidden');
-        document.getElementById('card-inner').classList.remove('flipped');
-    }
-
     function renderCard() {
         const item = dataHuruf[currentIndex];
         document.getElementById('char-display').innerText = item.h;
         document.getElementById('progress').innerText = `${currentIndex + 1} / ${dataHuruf.length}`;
         
-        // Render Traits for Back Side
         const traitsList = document.getElementById('traits-list');
         traitsList.innerHTML = item.s.map(s => `<span class="bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-xs font-bold">${s}</span>`).join('');
 
-        // Render Options for Play Mode
         if (currentMode === 'play') {
             const optionsGrid = document.getElementById('options-grid');
             selectedTraits = [];
-            optionsGrid.innerHTML = allTraits.map(t => `
-                <button onclick="toggleTrait('${t}', this)" class="trait-opt border border-slate-200 p-2 rounded-lg text-xs hover:border-emerald-500 transition bg-white">
-                    ${t}
-                </button>
-            `).join('');
+            let html = '';
+            
+            traitGroups.forEach((group, idx) => {
+                const isSingleGroup = idx === 5;
+                html += `<div class="flex flex-wrap gap-2 justify-center ${!isSingleGroup ? 'border-b border-slate-100 pb-2' : ''}">`;
+                group.forEach(t => {
+                    html += `
+                        <button onclick="toggleTrait('${t}', this)" 
+                            class="trait-opt border border-slate-200 px-2 py-2 rounded-lg text-[10px] md:text-xs bg-white hover:border-emerald-500 transition-all flex-1 min-w-[70px]">
+                            ${t}
+                        </button>`;
+                });
+                html += `</div>`;
+            });
+            optionsGrid.innerHTML = html;
             document.getElementById('card-inner').classList.remove('flipped');
-            document.getElementById('submit-btn').disabled = false;
             document.getElementById('submit-btn').innerText = "Periksa Jawaban";
-        }
-    }
-
-    function handleCardClick() {
-        if (currentMode === 'study') {
-            document.getElementById('card-inner').classList.toggle('flipped');
+            document.getElementById('submit-btn').onclick = checkAnswer;
         }
     }
 
@@ -183,29 +185,38 @@
     }
 
     function checkAnswer() {
-        const correctTraits = dataHuruf[currentIndex].s;
-        const isCorrect = correctTraits.length === selectedTraits.length && 
-                          correctTraits.every(t => selectedTraits.includes(t));
+        const correctTraits = [...dataHuruf[currentIndex].s].sort();
+        const userTraits = [...selectedTraits].sort();
+        const isCorrect = JSON.stringify(correctTraits) === JSON.stringify(userTraits);
 
         document.getElementById('card-inner').classList.add('flipped');
         
         if (isCorrect) {
             score += 10;
-            alert("Maa syaa Allah! Jawaban Kamu Benar.");
+            updateScore();
+            alert("Maa syaa Allah! Benar.");
         } else {
-            alert("Kurang tepat. Cek sifat yang benar di balik kartu.");
+            alert("Kurang tepat. Perhatikan sifat yang benar.");
         }
         
-        updateScore();
-        document.getElementById('submit-btn').innerText = "Lanjut ke Huruf Berikutnya";
-        document.getElementById('submit-btn').onclick = () => {
-            nextCard();
-            document.getElementById('submit-btn').onclick = checkAnswer;
-        };
+        document.getElementById('submit-btn').innerText = "Selanjutnya";
+        document.getElementById('submit-btn').onclick = nextCard;
+    }
+
+    function backToMenu() {
+        document.getElementById('menu').classList.remove('hidden');
+        document.getElementById('game-container').classList.add('hidden');
+        document.getElementById('card-inner').classList.remove('flipped');
     }
 
     function updateScore() {
         document.getElementById('score-display').innerText = `Skor: ${score}`;
+    }
+
+    function handleCardClick() {
+        if (currentMode === 'study') {
+            document.getElementById('card-inner').classList.toggle('flipped');
+        }
     }
 
     function nextCard() {
@@ -214,7 +225,7 @@
             document.getElementById('card-inner').classList.remove('flipped');
             setTimeout(renderCard, 300);
         } else {
-            alert(`Selesai! Skor akhir Anda: ${score}`);
+            alert(`Selesai! Skor akhir: ${score}`);
             backToMenu();
         }
     }
