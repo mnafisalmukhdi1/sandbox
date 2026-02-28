@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Sifat Huruf Hijaiyah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Inter:wght@400;600&display=swap');
+        .arabic { font-family: 'Amiri', serif; }
+        .card-flip { perspective: 1000px; }
+        .card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+        .flipped { transform: rotateY(180deg); }
+        .card-front, .card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .card-back { transform: rotateY(180deg); }
+    </style>
+</head>
+<body class="bg-slate-50 font-['Inter'] min-h-screen">
+
+<div id="app" class="max-w-md mx-auto p-4">
+    <header class="text-center py-6">
+        <h1 class="text-2xl font-bold text-emerald-700">Sifat Huruf Hijaiyah</h1>
+        <p class="text-slate-500 text-sm">Belajar & Uji Pemahaman</p>
+    </header>
+
+    <div id="menu" class="space-y-4">
+        <button onclick="startMode('study')" class="w-full bg-white border-2 border-emerald-500 p-6 rounded-2xl shadow-sm hover:bg-emerald-50 transition flex items-center justify-between">
+            <div class="text-left">
+                <span class="block text-lg font-bold text-emerald-700">Mode Belajar</span>
+                <span class="text-sm text-slate-500">Lihat huruf dan pelajari sifatnya</span>
+            </div>
+            <span class="material-icons text-emerald-500 fontSize-large">menu_book</span>
+        </button>
+        <button onclick="startMode('play')" class="w-full bg-emerald-600 p-6 rounded-2xl shadow-sm hover:bg-emerald-700 transition flex items-center justify-between text-white">
+            <div class="text-left">
+                <span class="block text-lg font-bold">Mode Bermain</span>
+                <span class="text-sm text-emerald-100">Tebak sifat dari huruf yang muncul</span>
+            </div>
+            <span class="material-icons">extension</span>
+        </button>
+    </div>
+
+    <div id="game-container" class="hidden">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="backToMenu()" class="text-slate-400 hover:text-slate-600">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <div id="progress" class="text-sm font-semibold text-slate-400 font-mono">1 / 28</div>
+            <div id="score-display" class="hidden text-emerald-600 font-bold">Skor: 0</div>
+        </div>
+
+        <div class="card-flip w-full h-80 relative cursor-pointer" id="flashcard" onclick="handleCardClick()">
+            <div class="card-inner w-full h-full relative shadow-xl rounded-3xl" id="card-inner">
+                <div class="card-front bg-white flex items-center justify-center rounded-3xl border-2 border-slate-100">
+                    <span id="char-display" class="arabic text-9xl text-slate-800">أ</span>
+                </div>
+                <div class="card-back bg-emerald-50 flex flex-col items-center justify-center rounded-3xl border-2 border-emerald-200 p-6 overflow-y-auto">
+                    <h3 class="text-emerald-800 font-bold mb-3 underline">Sifat Huruf:</h3>
+                    <div id="traits-list" class="flex flex-wrap justify-center gap-2">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="quiz-controls" class="mt-8 hidden">
+            <p class="text-center text-sm text-slate-500 mb-4">Pilih semua sifat yang benar:</p>
+            <div id="options-grid" class="grid grid-cols-2 gap-2">
+                </div>
+            <button onclick="checkAnswer()" id="submit-btn" class="w-full mt-6 bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg">Periksa Jawaban</button>
+        </div>
+
+        <div id="nav-controls" class="mt-8 flex gap-4">
+            <button onclick="prevCard()" class="flex-1 bg-white border border-slate-200 py-3 rounded-xl hover:bg-slate-50 transition">Kembali</button>
+            <button onclick="nextCard()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl shadow-lg hover:bg-emerald-700 transition">Lanjut</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dataHuruf = [
+        { h: 'أ', s: ['Jahr', 'Syiddah', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'ب', s: ['Jahr', 'Syiddah', 'Istifal', 'Infitah', 'Idzlaq', 'Qalqalah'] },
+        { h: 'ت', s: ['Hams', 'Syiddah', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'ث', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'ج', s: ['Jahr', 'Syiddah', 'Istifal', 'Infitah', 'Ishmat', 'Qalqalah'] },
+        { h: 'ح', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'خ', s: ['Hams', 'Rakhawah', 'Isti\'la', 'Infitah', 'Ishmat'] },
+        { h: 'د', s: ['Jahr', 'Syiddah', 'Istifal', 'Infitah', 'Ishmat', 'Qalqalah'] },
+        { h: 'ذ', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'ر', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq', 'Inhiraf', 'Takrir'] },
+        { h: 'ز', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Shafir'] },
+        { h: 'س', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Shafir'] },
+        { h: 'ش', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Tafasysyi'] },
+        { h: 'ص', s: ['Hams', 'Rakhawah', 'Isti\'la', 'Ithbaq', 'Ishmat', 'Shafir'] },
+        { h: 'ض', s: ['Jahr', 'Rakhawah', 'Isti\'la', 'Ithbaq', 'Ishmat', 'Istitholah'] },
+        { h: 'ط', s: ['Jahr', 'Syiddah', 'Isti\'la', 'Ithbaq', 'Ishmat', 'Qalqalah'] },
+        { h: 'ظ', s: ['Jahr', 'Rakhawah', 'Isti\'la', 'Ithbaq', 'Ishmat'] },
+        { h: 'ع', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'غ', s: ['Jahr', 'Rakhawah', 'Isti\'la', 'Infitah', 'Ishmat'] },
+        { h: 'ف', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Idzlaq'] },
+        { h: 'ق', s: ['Jahr', 'Syiddah', 'Isti\'la', 'Infitah', 'Ishmat', 'Qalqalah'] },
+        { h: 'ك', s: ['Hams', 'Syiddah', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'ل', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq', 'Inhiraf'] },
+        { h: 'م', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq'] },
+        { h: 'ن', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq'] },
+        { h: 'و', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Lin'] },
+        { h: 'ه', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat'] },
+        { h: 'ي', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Lin'] }
+    ];
+
+    const allTraits = ['Hams', 'Jahr', 'Syiddah', 'Tawassuth', 'Rakhawah', 'Isti\'la', 'Istifal', 'Ithbaq', 'Infitah', 'Idzlaq', 'Ishmat', 'Shafir', 'Qalqalah', 'Lin', 'Inhiraf', 'Takrir', 'Tafasysyi', 'Istitholah'];
+
+    let currentIndex = 0;
+    let currentMode = 'study';
+    let selectedTraits = [];
+    let score = 0;
+
+    function startMode(mode) {
+        currentMode = mode;
+        document.getElementById('menu').classList.add('hidden');
+        document.getElementById('game-container').classList.remove('hidden');
+        
+        if (mode === 'play') {
+            document.getElementById('quiz-controls').classList.remove('hidden');
+            document.getElementById('nav-controls').classList.add('hidden');
+            document.getElementById('score-display').classList.remove('hidden');
+            score = 0;
+            updateScore();
+            dataHuruf.sort(() => Math.random() - 0.5); // Shuffle for play
+        } else {
+            document.getElementById('quiz-controls').classList.add('hidden');
+            document.getElementById('nav-controls').classList.remove('hidden');
+            document.getElementById('score-display').classList.add('hidden');
+        }
+        renderCard();
+    }
+
+    function backToMenu() {
+        document.getElementById('menu').classList.remove('hidden');
+        document.getElementById('game-container').classList.add('hidden');
+        document.getElementById('card-inner').classList.remove('flipped');
+    }
+
+    function renderCard() {
+        const item = dataHuruf[currentIndex];
+        document.getElementById('char-display').innerText = item.h;
+        document.getElementById('progress').innerText = `${currentIndex + 1} / ${dataHuruf.length}`;
+        
+        // Render Traits for Back Side
+        const traitsList = document.getElementById('traits-list');
+        traitsList.innerHTML = item.s.map(s => `<span class="bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-xs font-bold">${s}</span>`).join('');
+
+        // Render Options for Play Mode
+        if (currentMode === 'play') {
+            const optionsGrid = document.getElementById('options-grid');
+            selectedTraits = [];
+            optionsGrid.innerHTML = allTraits.map(t => `
+                <button onclick="toggleTrait('${t}', this)" class="trait-opt border border-slate-200 p-2 rounded-lg text-xs hover:border-emerald-500 transition bg-white">
+                    ${t}
+                </button>
+            `).join('');
+            document.getElementById('card-inner').classList.remove('flipped');
+            document.getElementById('submit-btn').disabled = false;
+            document.getElementById('submit-btn').innerText = "Periksa Jawaban";
+        }
+    }
+
+    function handleCardClick() {
+        if (currentMode === 'study') {
+            document.getElementById('card-inner').classList.toggle('flipped');
+        }
+    }
+
+    function toggleTrait(trait, el) {
+        if (selectedTraits.includes(trait)) {
+            selectedTraits = selectedTraits.filter(t => t !== trait);
+            el.classList.remove('bg-emerald-500', 'text-white', 'border-emerald-500');
+        } else {
+            selectedTraits.push(trait);
+            el.classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
+        }
+    }
+
+    function checkAnswer() {
+        const correctTraits = dataHuruf[currentIndex].s;
+        const isCorrect = correctTraits.length === selectedTraits.length && 
+                          correctTraits.every(t => selectedTraits.includes(t));
+
+        document.getElementById('card-inner').classList.add('flipped');
+        
+        if (isCorrect) {
+            score += 10;
+            alert("Maa syaa Allah! Jawaban Kamu Benar.");
+        } else {
+            alert("Kurang tepat. Cek sifat yang benar di balik kartu.");
+        }
+        
+        updateScore();
+        document.getElementById('submit-btn').innerText = "Lanjut ke Huruf Berikutnya";
+        document.getElementById('submit-btn').onclick = () => {
+            nextCard();
+            document.getElementById('submit-btn').onclick = checkAnswer;
+        };
+    }
+
+    function updateScore() {
+        document.getElementById('score-display').innerText = `Skor: ${score}`;
+    }
+
+    function nextCard() {
+        if (currentIndex < dataHuruf.length - 1) {
+            currentIndex++;
+            document.getElementById('card-inner').classList.remove('flipped');
+            setTimeout(renderCard, 300);
+        } else {
+            alert(`Selesai! Skor akhir Anda: ${score}`);
+            backToMenu();
+        }
+    }
+
+    function prevCard() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            document.getElementById('card-inner').classList.remove('flipped');
+            setTimeout(renderCard, 300);
+        }
+    }
+</script>
+</body>
+</html>
