@@ -14,6 +14,8 @@
         .flipped { transform: rotateY(180deg); }
         .card-front, .card-back { backface-visibility: hidden; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .card-back { transform: rotateY(180deg); }
+        /* Memastikan area klik bersih */
+        .trait-opt { cursor: pointer; -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="bg-slate-50 font-['Inter'] min-h-screen">
@@ -50,22 +52,22 @@
             <div id="score-display" class="hidden text-emerald-600 font-bold">Skor: 0</div>
         </div>
 
-        <div class="card-flip w-full h-64 relative cursor-pointer" id="flashcard" onclick="handleCardClick()">
+        <div class="card-flip w-full h-64 relative mb-4" id="flashcard">
             <div class="card-inner w-full h-full relative shadow-xl rounded-3xl" id="card-inner">
-                <div class="card-front bg-white flex items-center justify-center rounded-3xl border-2 border-slate-100">
+                <div class="card-front bg-white flex items-center justify-center rounded-3xl border-2 border-slate-100" onclick="handleCardClick()">
                     <span id="char-display" class="arabic text-8xl text-slate-800">أ</span>
                 </div>
-                <div class="card-back bg-emerald-50 flex flex-col items-center justify-center rounded-3xl border-2 border-emerald-200 p-6 overflow-y-auto">
-                    <h3 class="text-emerald-800 font-bold mb-3 underline">Jawaban Benar:</h3>
+                <div class="card-back bg-emerald-50 flex flex-col items-center justify-center rounded-3xl border-2 border-emerald-200 p-6 overflow-y-auto" onclick="handleCardClick()">
+                    <h3 class="text-emerald-800 font-bold mb-3 underline">Sifat Benar:</h3>
                     <div id="traits-list" class="flex flex-wrap justify-center gap-2"></div>
                 </div>
             </div>
         </div>
 
         <div id="quiz-controls" class="mt-6 hidden">
-            <div id="options-grid" class="space-y-3">
+            <div id="options-grid" class="space-y-4">
                 </div>
-            <button onclick="checkAnswer()" id="submit-btn" class="w-full mt-6 bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg">Periksa Jawaban</button>
+            <button onclick="checkAnswer()" id="submit-btn" class="w-full mt-8 bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition-transform">Periksa Jawaban</button>
         </div>
 
         <div id="nav-controls" class="mt-8 flex gap-4">
@@ -87,156 +89,4 @@
         { h: 'د', s: ['Jahr', 'Syiddah', 'Istifal', 'Infitah', 'Ishmat', 'Qalqalah'] },
         { h: 'ذ', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat'] },
         { h: 'ر', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq', 'Inhiraf', 'Takrir'] },
-        { h: 'ز', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Shafir'] },
-        { h: 'س', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Shafir'] },
-        { h: 'ش', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Tafasysyi'] },
-        { h: 'ص', s: ['Hams', 'Rakhawah', 'Isti\'la', 'Ithbaq', 'Ishmat', 'Shafir'] },
-        { h: 'ض', s: ['Jahr', 'Rakhawah', 'Isti\'la', 'Ithbaq', 'Ishmat', 'Istitholah'] },
-        { h: 'ط', s: ['Jahr', 'Syiddah', 'Isti\'la', 'Ithbaq', 'Ishmat', 'Qalqalah'] },
-        { h: 'ظ', s: ['Jahr', 'Rakhawah', 'Isti\'la', 'Ithbaq', 'Ishmat'] },
-        { h: 'ع', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Ishmat'] },
-        { h: 'غ', s: ['Jahr', 'Rakhawah', 'Isti\'la', 'Infitah', 'Ishmat'] },
-        { h: 'ف', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Idzlaq'] },
-        { h: 'ق', s: ['Jahr', 'Syiddah', 'Isti\'la', 'Infitah', 'Ishmat', 'Qalqalah'] },
-        { h: 'ك', s: ['Hams', 'Syiddah', 'Istifal', 'Infitah', 'Ishmat'] },
-        { h: 'ل', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq', 'Inhiraf'] },
-        { h: 'م', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq'] },
-        { h: 'ن', s: ['Jahr', 'Tawassuth', 'Istifal', 'Infitah', 'Idzlaq'] },
-        { h: 'و', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Lin'] },
-        { h: 'ه', s: ['Hams', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat'] },
-        { h: 'ي', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infitah', 'Ishmat', 'Lin'] }
-    ];
-
-    const traitGroups = [
-        ['Hams', 'Jahr'],
-        ['Syiddah', 'Tawassuth', 'Rakhawah'],
-        ['Isti\'la', 'Istifal'],
-        ['Ithbaq', 'Infitah'],
-        ['Idzlaq', 'Ishmat'],
-        ['Shafir', 'Qalqalah', 'Lin', 'Inhiraf', 'Takrir', 'Tafasysyi', 'Istitholah']
-    ];
-
-    let currentIndex = 0;
-    let currentMode = 'study';
-    let selectedTraits = [];
-    let score = 0;
-
-    function startMode(mode) {
-        currentMode = mode;
-        document.getElementById('menu').classList.add('hidden');
-        document.getElementById('game-container').classList.remove('hidden');
-        currentIndex = 0;
-        
-        if (mode === 'play') {
-            document.getElementById('quiz-controls').classList.remove('hidden');
-            document.getElementById('nav-controls').classList.add('hidden');
-            document.getElementById('score-display').classList.remove('hidden');
-            score = 0;
-            updateScore();
-            dataHuruf.sort(() => Math.random() - 0.5);
-        } else {
-            document.getElementById('quiz-controls').classList.add('hidden');
-            document.getElementById('nav-controls').classList.remove('hidden');
-            document.getElementById('score-display').classList.add('hidden');
-        }
-        renderCard();
-    }
-
-    function renderCard() {
-        const item = dataHuruf[currentIndex];
-        document.getElementById('char-display').innerText = item.h;
-        document.getElementById('progress').innerText = `${currentIndex + 1} / ${dataHuruf.length}`;
-        
-        const traitsList = document.getElementById('traits-list');
-        traitsList.innerHTML = item.s.map(s => `<span class="bg-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-xs font-bold">${s}</span>`).join('');
-
-        if (currentMode === 'play') {
-            const optionsGrid = document.getElementById('options-grid');
-            selectedTraits = [];
-            let html = '';
-            
-            traitGroups.forEach((group, idx) => {
-                const isSingleGroup = idx === 5;
-                html += `<div class="flex flex-wrap gap-2 justify-center ${!isSingleGroup ? 'border-b border-slate-100 pb-2' : ''}">`;
-                group.forEach(t => {
-                    html += `
-                        <button onclick="toggleTrait('${t}', this)" 
-                            class="trait-opt border border-slate-200 px-2 py-2 rounded-lg text-[10px] md:text-xs bg-white hover:border-emerald-500 transition-all flex-1 min-w-[70px]">
-                            ${t}
-                        </button>`;
-                });
-                html += `</div>`;
-            });
-            optionsGrid.innerHTML = html;
-            document.getElementById('card-inner').classList.remove('flipped');
-            document.getElementById('submit-btn').innerText = "Periksa Jawaban";
-            document.getElementById('submit-btn').onclick = checkAnswer;
-        }
-    }
-
-    function toggleTrait(trait, el) {
-        if (selectedTraits.includes(trait)) {
-            selectedTraits = selectedTraits.filter(t => t !== trait);
-            el.classList.remove('bg-emerald-500', 'text-white', 'border-emerald-500');
-        } else {
-            selectedTraits.push(trait);
-            el.classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
-        }
-    }
-
-    function checkAnswer() {
-        const correctTraits = [...dataHuruf[currentIndex].s].sort();
-        const userTraits = [...selectedTraits].sort();
-        const isCorrect = JSON.stringify(correctTraits) === JSON.stringify(userTraits);
-
-        document.getElementById('card-inner').classList.add('flipped');
-        
-        if (isCorrect) {
-            score += 10;
-            updateScore();
-            alert("Maa syaa Allah! Benar.");
-        } else {
-            alert("Kurang tepat. Perhatikan sifat yang benar.");
-        }
-        
-        document.getElementById('submit-btn').innerText = "Selanjutnya";
-        document.getElementById('submit-btn').onclick = nextCard;
-    }
-
-    function backToMenu() {
-        document.getElementById('menu').classList.remove('hidden');
-        document.getElementById('game-container').classList.add('hidden');
-        document.getElementById('card-inner').classList.remove('flipped');
-    }
-
-    function updateScore() {
-        document.getElementById('score-display').innerText = `Skor: ${score}`;
-    }
-
-    function handleCardClick() {
-        if (currentMode === 'study') {
-            document.getElementById('card-inner').classList.toggle('flipped');
-        }
-    }
-
-    function nextCard() {
-        if (currentIndex < dataHuruf.length - 1) {
-            currentIndex++;
-            document.getElementById('card-inner').classList.remove('flipped');
-            setTimeout(renderCard, 300);
-        } else {
-            alert(`Selesai! Skor akhir: ${score}`);
-            backToMenu();
-        }
-    }
-
-    function prevCard() {
-        if (currentIndex > 0) {
-            currentIndex--;
-            document.getElementById('card-inner').classList.remove('flipped');
-            setTimeout(renderCard, 300);
-        }
-    }
-</script>
-</body>
-</html>
+        { h: 'ز', s: ['Jahr', 'Rakhawah', 'Istifal', 'Infit
