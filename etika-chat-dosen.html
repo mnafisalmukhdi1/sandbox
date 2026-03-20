@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Etika Chat Dosen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            display: ['DM Serif Display', 'serif'],
+          },
+          colors: {
+            forest: {
+              50:  '#f0faf4',
+              100: '#d9f2e3',
+              200: '#b3e5c8',
+              300: '#7dcfa4',
+              400: '#47b47c',
+              500: '#27955e',
+              600: '#1a7a4b',
+              700: '#155f3b',
+              800: '#114d30',
+              900: '#0d3d26',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: #f0faf4; }
+    .card-shadow { box-shadow: 0 4px 24px 0 rgba(27,122,75,0.10), 0 1px 4px 0 rgba(27,122,75,0.07); }
+    .toggle-input { display: none; }
+    .toggle-track {
+      width: 48px; height: 26px;
+      background: #cbd5e1;
+      border-radius: 9999px;
+      position: relative;
+      cursor: pointer;
+      transition: background .3s;
+      display: inline-block;
+    }
+    .toggle-input:checked ~ .toggle-track { background: #27955e; }
+    .toggle-thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform .3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.15);
+    }
+    .toggle-input:checked ~ .toggle-track .toggle-thumb { transform: translateX(22px); }
+    .result-appear { animation: fadeSlideIn .4s ease; }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .input-focus:focus {
+      outline: none;
+      border-color: #27955e;
+      box-shadow: 0 0 0 3px rgba(39,149,94,.15);
+    }
+    .radio-card input[type="radio"] { display: none; }
+    .radio-card label {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 18px;
+      border: 2px solid #d1fae5;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      color: #27955e;
+      background: white;
+      transition: all .2s;
+    }
+    .radio-card input[type="radio"]:checked + label {
+      background: #27955e;
+      color: white;
+      border-color: #27955e;
+    }
+    .btn-copy { transition: all .15s; }
+    .btn-copy:active { transform: scale(.96); }
+  </style>
+</head>
+<body class="min-h-screen font-sans">
+
+  <!-- Header -->
+  <header class="bg-forest-700 text-white px-6 py-5 flex items-center gap-3 shadow-lg">
+    <span class="material-icons-round text-forest-200 text-3xl">school</span>
+    <div>
+      <h1 class="font-display text-2xl leading-tight">Etika Chat Dosen</h1>
+      <p class="text-forest-200 text-xs mt-0.5">Generator pesan sopan untuk mahasiswa</p>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="max-w-xl mx-auto px-4 py-8 space-y-5">
+
+    <!-- Identitas -->
+    <section class="bg-white rounded-2xl card-shadow p-6 space-y-4">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="material-icons-round text-forest-500">badge</span>
+        <h2 class="font-semibold text-forest-800 text-base">Identitas Mahasiswa</h2>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-xs font-semibold text-forest-700 flex items-center gap-1">
+          <span class="material-icons-round text-sm">person</span> Nama Lengkap
+        </label>
+        <input type="text" id="nama" placeholder="Masukkan nama lengkap…"
+          class="input-focus w-full border border-forest-200 rounded-xl px-4 py-2.5 text-sm bg-forest-50 transition"/>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-xs font-semibold text-forest-700 flex items-center gap-1">
+          <span class="material-icons-round text-sm">tag</span> NIM
+        </label>
+        <input type="text" id="nim" placeholder="Nomor Induk Mahasiswa…"
+          class="input-focus w-full border border-forest-200 rounded-xl px-4 py-2.5 text-sm bg-forest-50 transition"/>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-xs font-semibold text-forest-700 flex items-center gap-1">
+          <span class="material-icons-round text-sm">class</span> Kelas
+        </label>
+        <input type="text" id="kelas" placeholder="Lokal / Prodi / Semester…"
+          class="input-focus w-full border border-forest-200 rounded-xl px-4 py-2.5 text-sm bg-forest-50 transition"/>
+      </div>
+    </section>
+
+    <!-- Pengaturan Pesan -->
+    <section class="bg-white rounded-2xl card-shadow p-6 space-y-5">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="material-icons-round text-forest-500">settings</span>
+        <h2 class="font-semibold text-forest-800 text-base">Pengaturan Pesan</h2>
+      </div>
+
+      <!-- Toggle Salam -->
+      <div class="flex items-center justify-between bg-forest-50 rounded-xl px-4 py-3">
+        <div>
+          <p class="text-sm font-semibold text-forest-800">Salam Islami</p>
+          <p class="text-xs text-forest-500">Assalamu'alaikum warahmatullahi wabarakatuh</p>
+        </div>
+        <label class="relative cursor-pointer flex items-center">
+          <input type="checkbox" id="salam" class="toggle-input"/>
+          <span class="toggle-track">
+            <span class="toggle-thumb"></span>
+          </span>
+        </label>
+      </div>
+
+      <!-- Gender Dosen -->
+      <div class="space-y-2">
+        <label class="text-xs font-semibold text-forest-700 flex items-center gap-1">
+          <span class="material-icons-round text-sm">supervisor_account</span> Jenis Kelamin Dosen
+        </label>
+        <div class="flex gap-3">
+          <div class="radio-card">
+            <input type="radio" name="gender" id="pria" value="pria"/>
+            <label for="pria">
+              <span class="material-icons-round text-base">man</span> Bapak
+            </label>
+          </div>
+          <div class="radio-card">
+            <input type="radio" name="gender" id="wanita" value="wanita"/>
+            <label for="wanita">
+              <span class="material-icons-round text-base">woman</span> Ibu
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Isi Pesan -->
+    <section class="bg-white rounded-2xl card-shadow p-6 space-y-4">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="material-icons-round text-forest-500">chat</span>
+        <h2 class="font-semibold text-forest-800 text-base">Isi Pesan</h2>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-xs font-semibold text-forest-700 flex items-center gap-1">
+          <span class="material-icons-round text-sm">flag</span> Tujuan Menghubungi
+        </label>
+        <input type="text" id="tujuan" placeholder="Contoh: bertanya mengenai tugas…"
+          class="input-focus w-full border border-forest-200 rounded-xl px-4 py-2.5 text-sm bg-forest-50 transition"/>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-xs font-semibold text-forest-700 flex items-center gap-1">
+          <span class="material-icons-round text-sm">help_outline</span> Pertanyaan
+        </label>
+        <input type="text" id="tanya" placeholder="Tulis pertanyaanmu di sini…"
+          class="input-focus w-full border border-forest-200 rounded-xl px-4 py-2.5 text-sm bg-forest-50 transition"/>
+      </div>
+
+      <div class="space-y-1">
+        <label class="text-xs font-semibold text-forest-700 flex items-center gap-1">
+          <span class="material-icons-round text-sm">volunteer_activism</span> Ucapan Terima Kasih
+        </label>
+        <input type="text" id="trims" placeholder="Contoh: Atas perhatian Bapak/Ibu, saya ucapkan terima kasih."
+          class="input-focus w-full border border-forest-200 rounded-xl px-4 py-2.5 text-sm bg-forest-50 transition"/>
+      </div>
+    </section>
+
+    <!-- Tombol Generate -->
+    <button onclick="bagikan()"
+      class="w-full bg-forest-600 hover:bg-forest-700 active:bg-forest-800 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 text-base shadow-lg transition-all">
+      <span class="material-icons-round">auto_awesome</span>
+      Buat Pesan
+    </button>
+
+    <!-- Hasil -->
+    <section id="hasil-section" class="hidden bg-white rounded-2xl card-shadow p-6 space-y-3 result-appear">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-icons-round text-forest-500">mark_chat_read</span>
+          <h2 class="font-semibold text-forest-800 text-base">Hasil Pesan</h2>
+        </div>
+        <button onclick="salin()" id="btn-salin"
+          class="btn-copy flex items-center gap-1.5 text-xs font-semibold bg-forest-50 hover:bg-forest-100 text-forest-700 border border-forest-200 px-3 py-1.5 rounded-lg transition">
+          <span class="material-icons-round text-sm" id="icon-salin">content_copy</span>
+          <span id="label-salin">Salin</span>
+        </button>
+      </div>
+      <textarea id="pesan" rows="8" readonly
+        class="w-full border border-forest-100 rounded-xl px-4 py-3 text-sm bg-forest-50 text-forest-900 resize-none focus:outline-none leading-relaxed"></textarea>
+    </section>
+
+  </main>
+
+  <footer class="text-center text-xs text-forest-400 pb-8">
+    Etika Chat Dosen &mdash; Bantu mahasiswa berkomunikasi dengan sopan 🌿
+  </footer>
+
+  <script>
+    function getSapa() {
+      const now = new Date();
+      const h = now.getHours(); // local time
+      if (h >= 4  && h < 11) return "Selamat Pagi";
+      if (h >= 11 && h < 13) return "Selamat Siang";
+      if (h >= 13 && h < 16) return "Selamat Sore";
+      if (h >= 16 && h < 19) return "Selamat Petang";
+      return "Selamat Malam";
+    }
+
+    function bagikan() {
+      const nama  = document.getElementById("nama").value.trim();
+      const nim   = document.getElementById("nim").value.trim();
+      const kelas = document.getElementById("kelas").value.trim();
+      const tujuan = document.getElementById("tujuan").value.trim();
+      const tanya  = document.getElementById("tanya").value.trim();
+      const trims  = document.getElementById("trims").value.trim();
+
+      // Validasi sederhana
+      if (!nama || !nim || !kelas) {
+        alert("Harap isi Nama, NIM, dan Kelas terlebih dahulu.");
+        return;
+      }
+
+      // Salam
+      const pakai_salam = document.getElementById("salam").checked;
+      const salam = pakai_salam ? "Assalamu'alaikum warahmatullahi wabarakatuh.\n\n" : "";
+
+      // Sapaan waktu
+      const sapa = getSapa() + ",";
+
+      // Sapaan dosen
+      const genderEl = document.querySelector('input[name="gender"]:checked');
+      let dosen = "Dosen";
+      if (genderEl) {
+        dosen = genderEl.value === "pria" ? "Bapak" : "Ibu";
+      }
+
+      // Susun pesan
+      const baris = [];
+      baris.push(salam + sapa);
+      baris.push(`${dosen} yang terhormat,`);
+      baris.push("");
+      baris.push(`Perkenalkan, saya ${nama}, mahasiswa dengan NIM ${nim} dari kelas ${kelas}.`);
+      if (tujuan) baris.push(`\nSaya menghubungi ${dosen} untuk ${tujuan}.`);
+      if (tanya)  baris.push(`\n${tanya}`);
+      baris.push("");
+      if (trims) baris.push(trims);
+      else       baris.push(`Atas perhatian ${dosen}, saya ucapkan terima kasih.`);
+      baris.push("\nHormat saya,");
+      baris.push(nama);
+
+      const hasil = baris.join("\n");
+      document.getElementById("pesan").value = hasil;
+
+      const sec = document.getElementById("hasil-section");
+      sec.classList.remove("hidden");
+      sec.classList.remove("result-appear");
+      void sec.offsetWidth; // reflow for re-trigger animation
+      sec.classList.add("result-appear");
+      sec.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function salin() {
+      const textarea = document.getElementById("pesan");
+      if (!textarea.value) return;
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        document.getElementById("icon-salin").textContent  = "check";
+        document.getElementById("label-salin").textContent = "Tersalin!";
+        setTimeout(() => {
+          document.getElementById("icon-salin").textContent  = "content_copy";
+          document.getElementById("label-salin").textContent = "Salin";
+        }, 2000);
+      }).catch(() => {
+        textarea.select();
+        document.execCommand("copy");
+      });
+    }
+  </script>
+</body>
+</html>
