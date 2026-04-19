@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>WID Generator Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 text-center w-80">
+        <div id="qr-wrapper" class="relative inline-block p-2 bg-white border border-gray-100 rounded-xl shadow-inner">
+            <div id="qrcode"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-full border border-gray-200 shadow-sm">
+                <span class="material-icons text-blue-600 text-2xl">book</span>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <p class="text-[10px] text-gray-400 font-bold tracking-[0.2em] uppercase">Works Identification</p>
+            <h2 id="wid-result" class="text-xl font-mono font-bold text-gray-800 mt-1">WID-MNAM-26-00000</h2>
+        </div>
+
+        <button onclick="generateWID()" class="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200 flex items-center justify-center gap-2">
+            <span class="material-icons text-sm">refresh</span>
+            Generate Baru
+        </button>
+    </div>
+
+    <script>
+        const qrContainer = document.getElementById("qrcode");
+        // Inisialisasi QR
+        let qrcode = new QRCode(qrContainer, {
+            width: 180, height: 180,
+            correctLevel: QRCode.CorrectLevel.H,
+            colorDark: "#1e293b" // slate-800
+        });
+
+        function generateWID() {
+            const seq = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
+            const finalWID = `WID-MNAM-26-${seq}`;
+            
+            // Update Teks
+            document.getElementById('wid-result').innerText = finalWID;
+            
+            // Update QR Code
+            qrcode.makeCode(`https://websiteanda.com/works/${finalWID.toLowerCase()}/`);
+        }
+
+        // Jalankan saat load
+        generateWID();
+    </script>
+</body>
+</html>
