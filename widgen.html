@@ -51,31 +51,24 @@
         });
 
         function generateWID() {
-            const slug = document.getElementById('slug-input').value || "karya-anda";
+            const slug = document.getElementById('slug-input').value.toLowerCase().trim() || "karya-anda";
             
-            // Mengambil 2 digit terakhir dari tahun sekarang
+            // 1. Membuat hash sederhana dari slug agar kodenya konsisten
+            let hash = 0;
+            for (let i = 0; i < slug.length; i++) {
+                hash = ((hash << 5) - hash) + slug.charCodeAt(i);
+                hash |= 0; // Convert ke 32bit integer
+            }
+            // Ambil nilai absolut dan batasi hingga 5 digit
+            const seq = Math.abs(hash % 100000).toString().padStart(5, '0');
+            
+            // 2. Tahun tetap dinamis sesuai tahun saat ini
             const year = new Date().getFullYear().toString().slice(-2);
-            const seq = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
             const finalWID = `WID-MNAM-${year}-${seq}`;
             
+            // 3. Update Teks ID dan QR
             document.getElementById('wid-result').innerText = finalWID;
-            qrcode.makeCode(`https://nafis1.my.id/works/${slug.toLowerCase().replace(/\s+/g, '-')}/`);
-        }
-
-        function downloadWID() {
-            const element = document.getElementById("capture-area");
-            
-            html2canvas(element, {
-                backgroundColor: "#ffffff",
-                scale: 3, // Skala 3 untuk hasil cetak yang sangat tajam
-                logging: false
-            }).then(canvas => {
-                const link = document.createElement("a");
-                const fileName = document.getElementById('wid-result').innerText;
-                link.download = `${fileName}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
+            qrcode.makeCode(`https://nafis1.my.id/works/${slug.replace(/\s+/g, '-')}/`);
         }
 
         generateWID();
