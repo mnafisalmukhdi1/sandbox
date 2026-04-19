@@ -53,35 +53,32 @@
         function generateWID() {
             const slug = document.getElementById('slug-input').value.toLowerCase().trim() || "karya-anda";
             
-            // 1. Membuat hash sederhana dari slug agar kodenya konsisten
             let hash = 0;
             for (let i = 0; i < slug.length; i++) {
                 hash = ((hash << 5) - hash) + slug.charCodeAt(i);
-                hash |= 0; // Convert ke 32bit integer
+                hash |= 0;
             }
-            // Ambil nilai absolut dan batasi hingga 5 digit
             const seq = Math.abs(hash % 100000).toString().padStart(5, '0');
-            
-            // 2. Tahun tetap dinamis sesuai tahun saat ini
             const year = new Date().getFullYear().toString().slice(-2);
             const finalWID = `WID-MNAM-${year}-${seq}`;
             
-            // 3. Update Teks ID dan QR
             document.getElementById('wid-result').innerText = finalWID;
             qrcode.makeCode(`https://nafis1.my.id/works/${slug.replace(/\s+/g, '-')}/`);
         }
 
         function downloadWID() {
             const element = document.getElementById("capture-area");
+            const slug = document.getElementById('slug-input').value.toLowerCase().trim() || "karya-anda";
             
             html2canvas(element, {
                 backgroundColor: "#ffffff",
-                scale: 3, // Skala 3 untuk hasil cetak yang sangat tajam
+                scale: 3,
                 logging: false
             }).then(canvas => {
                 const link = document.createElement("a");
-                const fileName = document.getElementById('wid-result').innerText;
-                link.download = `${fileName}.png`;
+                const widCode = document.getElementById('wid-result').innerText;
+                // Nama file: WID-MNAM-26-XXXXX_slug-karya.png
+                link.download = `${widCode}_${slug.replace(/\s+/g, '-')}.png`;
                 link.href = canvas.toDataURL("image/png");
                 link.click();
             });
