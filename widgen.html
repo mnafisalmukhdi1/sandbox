@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
 
     <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 text-center w-80">
         <div id="qr-wrapper" class="relative inline-block p-2 bg-white border border-gray-100 rounded-xl shadow-inner">
@@ -15,6 +15,12 @@
             <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-full border border-gray-200 shadow-sm">
                 <span class="material-icons text-blue-600 text-2xl">book</span>
             </div>
+        </div>
+
+        <div class="mt-4">
+            <input type="text" id="slug-input" placeholder="Masukkan slug (contoh: novel-saya)" 
+                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                   oninput="generateWID()">
         </div>
 
         <div class="mt-6">
@@ -30,22 +36,26 @@
 
     <script>
         const qrContainer = document.getElementById("qrcode");
-        // Inisialisasi QR
+        
         let qrcode = new QRCode(qrContainer, {
             width: 180, height: 180,
             correctLevel: QRCode.CorrectLevel.H,
-            colorDark: "#1e293b" // slate-800
+            colorDark: "#1e293b"
         });
 
         function generateWID() {
+            // 1. Ambil slug dari input, gunakan default jika kosong
+            const slug = document.getElementById('slug-input').value || "karya-anda";
+            
+            // 2. Generate ID unik
             const seq = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
             const finalWID = `WID-MNAM-26-${seq}`;
             
-            // Update Teks
+            // 3. Update Teks ID
             document.getElementById('wid-result').innerText = finalWID;
             
-            // Update QR Code
-            qrcode.makeCode(`https://websiteanda.com/works/${finalWID.toLowerCase()}/`);
+            // 4. Update QR Code ke URL /works/slug/
+            qrcode.makeCode(`https://nafis1.my.id/works/${slug.toLowerCase().replace(/\s+/g, '-')}/`);
         }
 
         // Jalankan saat load
