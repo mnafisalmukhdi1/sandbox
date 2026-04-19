@@ -71,6 +71,22 @@
             qrcode.makeCode(`https://nafis1.my.id/works/${slug.replace(/\s+/g, '-')}/`);
         }
 
+        function downloadWID() {
+            const element = document.getElementById("capture-area");
+            
+            html2canvas(element, {
+                backgroundColor: "#ffffff",
+                scale: 3, // Skala 3 untuk hasil cetak yang sangat tajam
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement("a");
+                const fileName = document.getElementById('wid-result').innerText;
+                link.download = `${fileName}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
         generateWID();
     </script>
 </body>
