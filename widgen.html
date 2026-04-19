@@ -12,7 +12,7 @@
 
     <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 text-center w-80">
         
-        <div id="capture-area" class="bg-white">
+        <div id="capture-area" class="bg-white p-2">
             <div id="qr-wrapper" class="relative inline-block p-2 bg-white border border-gray-100 rounded-xl shadow-inner">
                 <div id="qrcode"></div>
                 <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-full border border-gray-200 shadow-sm">
@@ -20,14 +20,14 @@
                 </div>
             </div>
 
-            <div class="mt-6">
-                <p class="text-[10px] text-gray-400 font-bold tracking-[0.2em] uppercase">Works Identification</p>
-                <h2 id="wid-result" class="text-xl font-mono font-bold text-gray-800 mt-1">WID-MNAM-26-00000</h2>
+            <div class="mt-4">
+                <h2 id="wid-result" class="text-xl font-mono font-bold text-gray-800">WID-MNAM-00-00000</h2>
             </div>
         </div>
 
         <div class="mt-8 pt-6 border-t border-gray-100">
-            <input type="text" id="slug-input" placeholder="Masukkan slug (contoh: novel-saya)" 
+            <p class="text-xs text-gray-400 mb-2 font-bold uppercase tracking-widest">Works Identification</p>
+            <input type="text" id="slug-input" placeholder="Masukkan slug karya" 
                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center mb-3"
                    oninput="generateWID()">
             
@@ -52,23 +52,25 @@
 
         function generateWID() {
             const slug = document.getElementById('slug-input').value || "karya-anda";
+            
+            // Mengambil 2 digit terakhir dari tahun sekarang
+            const year = new Date().getFullYear().toString().slice(-2);
             const seq = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
-            const finalWID = `WID-MNAM-26-${seq}`;
+            const finalWID = `WID-MNAM-${year}-${seq}`;
             
             document.getElementById('wid-result').innerText = finalWID;
             qrcode.makeCode(`https://nafis1.my.id/works/${slug.toLowerCase().replace(/\s+/g, '-')}/`);
         }
 
         function downloadWID() {
-            // Mengambil elemen spesifik saja
             const element = document.getElementById("capture-area");
             
             html2canvas(element, {
-                backgroundColor: "#ffffff", // Memastikan background putih bersih
-                scale: 2 // Meningkatkan resolusi gambar agar tidak pecah saat cetak
+                backgroundColor: "#ffffff",
+                scale: 3, // Skala 3 untuk hasil cetak yang sangat tajam
+                logging: false
             }).then(canvas => {
                 const link = document.createElement("a");
-                // Mengambil teks dari elemen h2 yang benar
                 const fileName = document.getElementById('wid-result').innerText;
                 link.download = `${fileName}.png`;
                 link.href = canvas.toDataURL("image/png");
