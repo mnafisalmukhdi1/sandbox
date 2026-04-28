@@ -13,13 +13,13 @@
     }
   </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100 space-y-10">
+<body class="flex flex-col items-center justify-center h-screen bg-gray-100 space-y-2 overflow-hidden">
 
-  <div class="flex flex-wrap gap-2 justify-center max-w-6xl">
+  <div class="flex flex-wrap gap-1 justify-center max-w-full overflow-y-auto" style="max-height: 45vh;">
   <!-- Draggable Items -->
   <div id="item1" draggable="true" 
        data-answer="Mustathil"
-       class="p-2 bg-white text-black border-1 border-solid rounded cursor-move arabic-text">لَكِنَّا هُوَ اللَّهُ رَبِّي</div>
+       class="p-1 bg-white text-black border-1 border-solid rounded cursor-move arabic-text text-xs">لَكِنَّا هُوَ اللَّهُ رَبِّي</div>
 
   <div id="item2" draggable="true" 
        data-answer="Badal"
@@ -139,42 +139,42 @@
 
   <div id="item31" draggable="true" 
        data-answer="Baraah"
-       class="p-2 bg-white text-black border-1 border-solid rounded cursor-move arabic-text">بَرَاءَةٌ</div>
+       class="p-1 bg-white text-black border-1 border-solid rounded cursor-move arabic-text text-xs">بَرَاءَةٌ</div>
 
   <div id="item32" draggable="true" 
        data-answer="Mustathil"
-       class="p-2 bg-white text-black border-1 border-solid rounded cursor-move arabic-text">قَوَارِيرَ - قَوَارِيرَا</div>
+       class="p-1 bg-white text-black border-1 border-solid rounded cursor-move arabic-text text-xs">قَوَارِيرَ - قَوَارِيرَا</div>
 
   <div id="item33" draggable="true" 
        data-answer="Iltiqa"
-       class="p-2 bg-white text-black border-1 border-solid rounded cursor-move arabic-text">قَوْمًا اللَّهُ</div>
+       class="p-1 bg-white text-black border-1 border-solid rounded cursor-move arabic-text text-xs">قَوْمًا اللَّهُ</div>
 
   <div id="item34" draggable="true" 
        data-answer="Mustadir"
-       class="p-2 bg-white text-black border-1 border-solid rounded cursor-move arabic-text">أَفَائِن</div>
+       class="p-1 bg-white text-black border-1 border-solid rounded cursor-move arabic-text text-xs">أَفَائِن</div>
 
   <div id="item35" draggable="true" 
        data-answer="Mustathil"
-       class="p-2 bg-white text-black border-1 border-solid rounded cursor-move arabic-text">أَنَا أَكْثَرُ</div>
+       class="p-1 bg-white text-black border-1 border-solid rounded cursor-move arabic-text text-xs">أَنَا أَكْثَرُ</div>
 
 </div>
-<div class="flex space-x-4 mt-6">
+<div class="flex flex-wrap gap-2 justify-center overflow-x-auto" style="max-height: 45vh;">
   <!-- Drop Zones -->
-  <div id="Isymam" class="w-32 h-32 border-2 border-dashed border-blue-400 flex items-center justify-center">Isymam</div>
-  <div id="Imalah" class="w-32 h-32 border-2 border-dashed border-pink-400 flex items-center justify-center">Imalah</div>
-  <div id="Tashil" class="w-32 h-32 border-2 border-dashed border-green-400 flex items-center justify-center">Tashil</div>
-  <div id="Iltiqa" class="w-32 h-32 border-2 border-dashed border-yellow-400 flex items-center justify-center">Iltiqaus Sakinain</div>
-  <div id="Mustathil" class="w-32 h-32 border-2 border-dashed border-red-400 flex items-center justify-center">Shifrul Mustathil</div>
-  <div id="Mustadir" class="w-32 h-32 border-2 border-dashed border-orange-400 flex items-center justify-center">Shifrul Mustadir</div>
-  <div id="Saktah" class="w-32 h-32 border-2 border-dashed border-gray-400 flex items-center justify-center">Saktah</div>
-  <div id="Badal" class="w-32 h-32 border-2 border-dashed border-teal-400 flex items-center justify-center">Badal</div>
-  <div id="Baraah" class="w-32 h-32 border-2 border-dashed border-purple-400 flex items-center justify-center">Bara'ah</div>
+  <div id="Isymam" class="w-24 h-24 border-2 border-dashed border-blue-400 flex items-center justify-center text-sm">Isymam</div>
+  <div id="Imalah" class="w-24 h-24 border-2 border-dashed border-pink-400 flex items-center justify-center text-sm">Imalah</div>
+  <div id="Tashil" class="w-24 h-24 border-2 border-dashed border-green-400 flex items-center justify-center text-sm">Tashil</div>
+  <div id="Iltiqa" class="w-24 h-24 border-2 border-dashed border-yellow-400 flex items-center justify-center text-sm">Iltiqaus Sakinain</div>
+  <div id="Mustathil" class="w-24 h-24 border-2 border-dashed border-red-400 flex items-center justify-center text-sm">Shifrul Mustathil</div>
+  <div id="Mustadir" class="w-24 h-24 border-2 border-dashed border-orange-400 flex items-center justify-center text-sm">Shifrul Mustadir</div>
+  <div id="Saktah" class="w-24 h-24 border-2 border-dashed border-gray-400 flex items-center justify-center text-sm">Saktah</div>
+  <div id="Badal" class="w-24 h-24 border-2 border-dashed border-teal-400 flex items-center justify-center text-sm">Badal</div>
+  <div id="Baraah" class="w-24 h-24 border-2 border-dashed border-purple-400 flex items-center justify-center text-sm">Bara'ah</div>
 </div>
 
 </div>
   <script>
     const draggables = document.querySelectorAll("[draggable='true']");
-    const zones = document.querySelectorAll(".flex.space-x-4.mt-6 > div");
+    const zones = document.querySelectorAll("[id='Isymam'], [id='Imalah'], [id='Tashil'], [id='Iltiqa'], [id='Mustathil'], [id='Mustadir'], [id='Saktah'], [id='Badal'], [id='Baraah']");
 
     draggables.forEach(item => {
       item.addEventListener("dragstart", (e) => {
