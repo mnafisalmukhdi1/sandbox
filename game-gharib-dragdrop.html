@@ -166,7 +166,7 @@
 </div>
   <script>
     const draggables = document.querySelectorAll("[draggable='true']");
-    const zones = document.querySelectorAll("[id^='zone']");
+    const zones = document.querySelectorAll(".flex.space-x-4.mt-6 > div");
 
     draggables.forEach(item => {
       item.addEventListener("dragstart", (e) => {
@@ -181,11 +181,12 @@
 
       zone.addEventListener("drop", (e) => {
         e.preventDefault();
-        const data = e.dataTransfer.getData("text");
-        const draggedElement = document.getElementById(data);
+        const itemId = e.dataTransfer.getData("text");
+        const draggedElement = document.getElementById(itemId);
+        const answerType = draggedElement.getAttribute("data-answer");
 
         // cek apakah drop zone sesuai
-        if (zone.id.toLowerCase().includes(data.slice(-1).toLowerCase())) {
+        if (zone.id === answerType) {
           zone.appendChild(draggedElement);
           draggedElement.classList.remove("bg-blue-500","bg-purple-500","bg-pink-500");
           draggedElement.classList.add("bg-green-500");
