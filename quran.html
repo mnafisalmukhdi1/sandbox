@@ -48,7 +48,7 @@
 
       let pageText = "";
       ayahs.forEach(ayah => {
-        pageText += ayah.text + " ﴿" + toArabicNumber(ayah.numberInSurah) + "﴾ ";
+        pageText += ayah.text + "﴾ " + toArabicNumber(ayah.numberInSurah) + " ﴿";
       });
 
       document.getElementById("quran-page").textContent = pageText;
