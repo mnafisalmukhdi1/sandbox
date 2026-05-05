@@ -2,6 +2,7 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quran Per Page</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -13,21 +14,26 @@
     body { font-family: 'Amiri', serif; }
   </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center p-6">
+<body class="bg-gray-100 flex flex-col items-center p-2 sm:p-6 min-h-screen">
 
-  <div class="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6">
-    <h1 class="text-2xl font-bold text-center mb-4">القرآن الكريم</h1>
+  <div class="w-full max-w-2xl sm:max-w-3xl bg-white shadow-lg rounded-lg p-3 sm:p-6">
+    <h1 class="text-xl sm:text-2xl font-bold text-center mb-4">القرآن الكريم</h1>
     
     <!-- Kontainer ayat -->
-    <div id="quran-page" dir="rtl" class="text-justify text-2xl leading-loose"></div>
+    <div id="quran-page" dir="rtl" class="text-justify text-lg sm:text-2xl leading-loose min-h-96 p-2 sm:p-0 touch-none select-text"></div>
 
     <!-- Navigasi di tengah -->
-    <div class="flex justify-center mt-6 space-x-6">
-      <button id="next" class="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        <span class="material-icons ml-2">chevron_left</span>
+    <div class="flex justify-center mt-6 gap-3 sm:gap-6 flex-wrap items-center">
+      <button id="prev" class="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded hover:bg-blue-600 active:bg-blue-700 transition min-h-12 min-w-12">
+        <span class="material-icons">chevron_left</span>
+        <span class="hidden sm:inline ml-2">السابق</span>
       </button>
-      <button id="prev" class="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-        <span class="material-icons mr-2">chevron_right</span>
+      <div class="text-center text-sm sm:text-base">
+        <span id="page-number">1</span> / <span>604</span>
+      </div>
+      <button id="next" class="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded hover:bg-blue-600 active:bg-blue-700 transition min-h-12 min-w-12">
+        <span class="hidden sm:inline mr-2">التالي</span>
+        <span class="material-icons">chevron_right</span>
       </button>
     </div>
   </div>
@@ -52,6 +58,7 @@
       });
 
       document.getElementById("quran-page").textContent = pageText;
+      document.getElementById("page-number").textContent = page;
     }
 
     document.getElementById("prev").addEventListener("click", () => {
@@ -70,30 +77,38 @@
 
     // Swipe gesture untuk mobile
     let touchStartX = 0;
+    let touchStartY = 0;
     let touchEndX = 0;
+    let touchEndY = 0;
 
-    document.getElementById("quran-page").addEventListener("touchstart", (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, false);
+    const pageContainer = document.getElementById("quran-page");
+    
+    pageContainer.addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].clientX;
+      touchStartY = e.changedTouches[0].clientY;
+    }, { passive: true });
 
-    document.getElementById("quran-page").addEventListener("touchend", (e) => {
-      touchEndX = e.changedTouches[0].screenX;
+    pageContainer.addEventListener("touchend", (e) => {
+      touchEndX = e.changedTouches[0].clientX;
+      touchEndY = e.changedTouches[0].clientY;
       handleSwipe();
-    }, false);
+    }, { passive: true });
 
     function handleSwipe() {
       const swipeThreshold = 50;
-      const diff = touchStartX - touchEndX;
+      const diffX = touchStartX - touchEndX;
+      const diffY = Math.abs(touchStartY - touchEndY);
 
-      if (Math.abs(diff) > swipeThreshold) {
-        if (diff > 0) {
-          // Swipe left -> next page
+      // Only register horizontal swipes, not vertical scrolls
+      if (Math.abs(diffX) > swipeThreshold && diffY < swipeThreshold) {
+        if (diffX > 0) {
+          // Swipe left in RTL = next page
           if (currentPage < 604) {
             currentPage++;
             loadPage(currentPage);
           }
         } else {
-          // Swipe right -> prev page
+          // Swipe right in RTL = prev page
           if (currentPage > 1) {
             currentPage--;
             loadPage(currentPage);
