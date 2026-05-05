@@ -19,7 +19,7 @@
     <h1 class="text-2xl font-bold text-center mb-4">القرآن الكريم</h1>
     
     <!-- Kontainer ayat -->
-    <div id="quran-page" dir="rtl" class="text-center text-2xl leading-loose"></div>
+    <div id="quran-page" dir="rtl" class="text-justify text-2xl leading-loose"></div>
 
     <!-- Navigasi di tengah -->
     <div class="flex justify-center mt-6 space-x-6">
@@ -101,6 +101,21 @@
         }
       }
     }
+
+    // Keyboard navigation
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") {
+        if (currentPage < 604) {
+          currentPage++;
+          loadPage(currentPage);
+        }
+      } else if (e.key === "ArrowLeft") {
+        if (currentPage > 1) {
+          currentPage--;
+          loadPage(currentPage);
+        }
+      }
+    });
 
     // Load halaman pertama
     loadPage(currentPage);
