@@ -41,11 +41,27 @@
             <p id="modalContent" class="text-gray-700 leading-relaxed italic"></p>
             
             <!-- Voice Recognition UI -->
-            <div id="voiceSection" class="hidden mt-6 border-t pt-4 text-center">
-                <div id="statusPulse" class="w-12 h-12 bg-red-500 rounded-full mx-auto mb-2 animate-pulse hidden"></div>
-                <p id="voiceStatus" class="text-sm font-semibold text-red-600 mb-2 italic">Mendengarkan...</p>
-                <div id="resultText" class="text-sm bg-gray-100 p-3 rounded-lg min-h-[50px] mb-4"></div>
+            <div id="voiceSection" class="hidden mt-6 border-t pt-4">
+                <div id="statusPulse" class="w-10 h-10 bg-red-500 rounded-full mx-auto mb-2 animate-pulse hidden"></div>
+                <p id="voiceStatus" class="text-center text-sm font-semibold text-red-600 mb-4 italic">Mendengarkan...</p>
+    
+                <div class="space-y-4 text-sm">
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <p class="font-bold text-blue-800 mb-1">Jawaban kamu:</p>
+                    <p id="userTranscript" class="italic text-gray-700">...</p>
+                </div>
+        
+                <div id="idealAnswerRow" class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 hidden">
+                    <p class="font-bold text-emerald-800 mb-1">Jawaban yang seharusnya:</p>
+                    <p id="correctAnswer" class="text-gray-700"></p>
+                </div>
+
+                <div id="scoreRow" class="text-center hidden">
+                    <p class="text-gray-500 font-semibold uppercase tracking-wider text-xs">Persentase Benar</p>
+                    <p id="similarityScore" class="text-4xl font-black text-emerald-600">0%</p>
+                </div>
             </div>
+        </div>
 
             <button onclick="closeModal()" class="w-full mt-6 bg-emerald-600 text-white py-2 rounded-xl font-bold hover:bg-emerald-700 transition">Tutup</button>
         </div>
@@ -75,8 +91,8 @@
             {
                 id: 4,
                 teks: "مَجْرَىٰهَا",
-                penjelasan: "Imalah: Memiringkan bunyi fathah ke arah kasroh (seperti bunyi 'e' dalam sate).",
-                fullAnswer: "Ada pelajaran Imalah di lafadz Majreha. Imalah artinya memiringkan bunyi fathah ke arah kasroh."
+                penjelasan: "Imalah",
+                fullAnswer: "Ada pelajaran Imalah di lafadz Majreha. Imalah adalah memiringkan bunyi fathah pada kasrah. Terdapat di Surah Hud ayat 41. Wa qolarkabu fiiha bismillahi majreha wa mursaha inna rabbi laghafururrahim."
             },
             {
                 id: 5,
@@ -349,6 +365,75 @@
             document.getElementById('modal').classList.add('hidden');
             if(recognition) recognition.stop();
         }
+
+// Fungsi Kalkulasi Kemiripan (Levenshtein Distance)
+function getSimilarity(s1, s2) {
+    let longer = s1.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
+    let shorter = s2.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"");
+    
+    if (longer.length < shorter.length) { [longer, shorter] = [shorter, longer]; }
+    let longerLength = longer.length;
+    if (longerLength === 0) return 100;
+
+    const distance = (function(a, b) {
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+        for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                if (b.charAt(i - 1) === a.charAt(j - 1)) { matrix[i][j] = matrix[i - 1][j - 1]; }
+                else {
+                    matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    })(longer, shorter);
+
+    return Math.round(((longerLength - distance) / longerLength) * 100);
+}
+
+function startListening(soal) {
+    if (!recognition) return alert("Browser tidak mendukung Speech Recognition");
+
+    const userTranscriptUI = document.getElementById('userTranscript');
+    const correctAnswerUI = document.getElementById('correctAnswer');
+    const scoreUI = document.getElementById('similarityScore');
+    const idealRow = document.getElementById('idealAnswerRow');
+    const scoreRow = document.getElementById('scoreRow');
+    const statusPulse = document.getElementById('statusPulse');
+
+    // Reset UI
+    userTranscriptUI.innerText = "Sebutkan jawaban...";
+    idealRow.classList.add('hidden');
+    scoreRow.classList.add('hidden');
+    statusPulse.classList.remove('hidden');
+
+    recognition.start();
+
+    recognition.onresult = (event) => {
+        const result = event.results[0][0].transcript;
+        userTranscriptUI.innerText = `"${result}"`;
+        
+        if (event.results[0].isFinal) {
+            statusPulse.classList.add('hidden');
+            document.getElementById('voiceStatus').innerText = "Analisis Selesai";
+            
+            // Hitung Skor
+            const score = getSimilarity(result, soal.fullAnswer);
+            
+            // Tampilkan Hasil Akhir
+            correctAnswerUI.innerText = soal.fullAnswer;
+            scoreUI.innerText = score + "%";
+            
+            idealRow.classList.remove('hidden');
+            scoreRow.classList.remove('hidden');
+            
+            // Beri warna berdasarkan skor
+            scoreUI.className = `text-4xl font-black ${score > 70 ? 'text-emerald-600' : 'text-orange-500'}`;
+        }
+    };
+}
 
         renderGrid();
     </script>
