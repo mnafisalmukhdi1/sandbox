@@ -20,19 +20,17 @@
     <h1 class="text-xl sm:text-2xl font-bold text-center mb-4">القرآن الكريم</h1>
     
     <!-- Kontainer ayat -->
-    <div id="quran-page" dir="rtl" class="text-justify text-lg sm:text-2xl leading-loose min-h-96 p-2 sm:p-0 touch-none select-text"></div>
+    <div id="quran-page" dir="rtl" class="text-justify text-lg sm:text-2xl leading-relaxed min-h-96 p-2 sm:p-0 touch-none select-text" style="line-height: 2.5;"></div>
 
     <!-- Navigasi di tengah -->
-    <div class="flex justify-center mt-6 gap-3 sm:gap-6 flex-wrap items-center">
+    <div class="flex justify-center mt-6 gap-3 sm:gap-6 flex-wrap items-center flex-row-reverse">
       <button id="prev" class="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded hover:bg-blue-600 active:bg-blue-700 transition min-h-12 min-w-12">
         <span class="material-icons">chevron_left</span>
-        <span class="hidden sm:inline ml-2">السابق</span>
       </button>
       <div class="text-center text-sm sm:text-base">
         <span id="page-number">1</span> / <span>604</span>
       </div>
       <button id="next" class="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded hover:bg-blue-600 active:bg-blue-700 transition min-h-12 min-w-12">
-        <span class="hidden sm:inline mr-2">التالي</span>
         <span class="material-icons">chevron_right</span>
       </button>
     </div>
