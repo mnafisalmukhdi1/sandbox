@@ -19,7 +19,7 @@
     <h1 class="text-2xl font-bold text-center mb-4">القرآن الكريم</h1>
     
     <!-- Kontainer ayat -->
-    <div id="quran-page" dir="rtl" class="text-right text-2xl leading-loose"></div>
+    <div id="quran-page" dir="rtl" class="text-center text-2xl leading-loose"></div>
 
     <!-- Navigasi di tengah -->
     <div class="flex justify-center mt-6 space-x-6">
@@ -67,6 +67,40 @@
         loadPage(currentPage);
       }
     });
+
+    // Swipe gesture untuk mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.getElementById("quran-page").addEventListener("touchstart", (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+
+    document.getElementById("quran-page").addEventListener("touchend", (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, false);
+
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const diff = touchStartX - touchEndX;
+
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          // Swipe left -> next page
+          if (currentPage < 604) {
+            currentPage++;
+            loadPage(currentPage);
+          }
+        } else {
+          // Swipe right -> prev page
+          if (currentPage > 1) {
+            currentPage--;
+            loadPage(currentPage);
+          }
+        }
+      }
+    }
 
     // Load halaman pertama
     loadPage(currentPage);
