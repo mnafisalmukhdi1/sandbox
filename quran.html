@@ -25,13 +25,13 @@
     <!-- Navigasi di tengah -->
     <div class="flex justify-center mt-6 gap-3 sm:gap-6 flex-wrap items-center flex-row-reverse">
       <button id="prev" class="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded hover:bg-blue-600 active:bg-blue-700 transition min-h-12 min-w-12">
-        <span class="material-icons">chevron_left</span>
+        <span class="material-icons">chevron_right</span>
       </button>
       <div class="text-center text-sm sm:text-base">
         <span id="page-number">1</span> / <span>604</span>
       </div>
       <button id="next" class="flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded hover:bg-blue-600 active:bg-blue-700 transition min-h-12 min-w-12">
-        <span class="material-icons">chevron_right</span>
+        <span class="material-icons">chevron_left</span>
       </button>
     </div>
   </div>
@@ -117,12 +117,12 @@
 
     // Keyboard navigation
     document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight") {
+      if (e.key === "ArrowLeft") {
         if (currentPage < 604) {
           currentPage++;
           loadPage(currentPage);
         }
-      } else if (e.key === "ArrowLeft") {
+      } else if (e.key === "ArrowRight") {
         if (currentPage > 1) {
           currentPage--;
           loadPage(currentPage);
