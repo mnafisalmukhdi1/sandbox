@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Domain Publik Indonesia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-2xl w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+        <div class="bg-indigo-600 p-6 text-white text-center">
+            <span class="material-icons text-4xl mb-2">balance</span>
+            <h1 class="text-2xl font-bold">Kalkulator Domain Publik</h1>
+            <p class="text-indigo-100 text-sm">Berdasarkan UU No. 28 Tahun 2014</p>
+        </div>
+
+        <div class="w-full bg-slate-200 h-1.5">
+            <div id="progress" class="bg-indigo-400 h-1.5 transition-all duration-500" style="width: 20%"></div>
+        </div>
+
+        <div id="app-content" class="p-8 min-h-[350px] flex flex-col justify-center fade-in">
+            </div>
+
+        <div class="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+            <button id="btn-back" onclick="goBack()" class="flex items-center text-slate-500 hover:text-indigo-600 transition font-medium hidden">
+                <span class="material-icons mr-1">arrow_back</span> Kembali
+            </button>
+            <button onclick="resetApp()" class="flex items-center text-slate-400 hover:text-red-500 transition text-sm">
+                <span class="material-icons text-sm mr-1">restart_alt</span> Ulangi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const currentYear = new Date().getFullYear();
+        let history = [];
+        let currentState = 'START';
+
+        const states = {
+            'START': {
+                question: "Apakah diketahui siapa pencipta karya yang akan diidentifikasi?",
+                options: [
+                    { text: "Ya, diketahui", next: 'KARYA_LIST', icon: 'person' },
+                    { text: "Tidak diketahui", next: 'PENGUMUM_KNOWN', icon: 'person_off' }
+                ]
+            },
+            // JALUR TIDAK DIKETAHUI PENCIPTA
+            'PENGUMUM_KNOWN': {
+                question: "Apakah diketahui siapa yang mengumumkan/mempublikasikan karya tersebut?",
+                options: [
+                    { text: "Ya, diketahui", next: 'ANONIM_CHECK', icon: 'publish' },
+                    { text: "Tidak (Karya Negara/Tanpa Pengumum)", next: 'NEGARA_CHECK', icon: 'gavel' }
+                ]
+            },
+            'ANONIM_CHECK': {
+                question: "Apakah sudah 50 tahun sejak pertama kali karya diumumkan?",
+                options: [
+                    { text: "Ya, sudah lewat 50 tahun", result: 'PUBLIC_DOMAIN', law: 'Pasal 60 ayat 3 UUHC No. 28/2014' },
+                    { text: "Belum", result: 'NOT_PD' }
+                ]
+            },
+            'NEGARA_CHECK': {
+                question: "Apakah sudah 50 tahun sejak pertama kali dilakukan pengumuman oleh negara?",
+                options: [
+                    { text: "Ya", result: 'PUBLIC_DOMAIN', law: 'Pasal 39 & 60 UUHC No. 28/2014' },
+                    { text: "Belum", result: 'NOT_PD' }
+                ]
+            },
+            // JALUR DIKETAHUI PENCIPTA
+            'KARYA_LIST': {
+                question: "Apa jenis karya yang ingin diidentifikasi?",
+                options: [
+                    { text: "Buku, Musik, Seni Rupa, Arsitektur, Peta", next: 'LIFETIME_CHECK', icon: 'menu_book' },
+                    { text: "Potret, Film, Video, Fotografi, Database", next: '50Y_CHECK', icon: 'camera_roll' },
+                    { text: "Seni Terapan (Applied Art)", next: '25Y_CHECK', icon: 'draw' },
+                    { text: "Hasil Rekaman Suara / Pertunjukan", next: '50Y_REC_CHECK', icon: 'mic' },
+                    { text: "Siaran Radio / TV", next: '20Y_CHECK', icon: 'radio' }
+                ]
+            },
+            'LIFETIME_CHECK': {
+                question: "Apakah sudah 70 tahun setelah kematian pencipta? (Dihitung dari 1 Januari tahun berikutnya)",
+                options: [
+                    { text: "Ya", result: 'PUBLIC_DOMAIN', law: 'Pasal 58 ayat 2 UUHC No. 28/2014' },
+                    { text: "Belum", result: 'NOT_PD' }
+                ]
+            },
+            '50Y_CHECK': {
+                question: "Apakah sudah 50 tahun sejak pertama kali dilakukan pengumuman?",
+                options: [
+                    { text: "Ya", result: 'PUBLIC_DOMAIN', law: 'Pasal 59 ayat 1 UUHC No. 28/2014' },
+                    { text: "Belum", result: 'NOT_PD' }
+                ]
+            },
+            '25Y_CHECK': {
+                question: "Apakah sudah 25 tahun sejak pertama kali dilakukan pengumuman?",
+                options: [
+                    { text: "Ya", result: 'PUBLIC_DOMAIN', law: 'Pasal 59 ayat 2 UUHC No. 28/2014' },
+                    { text: "Belum", result: 'NOT_PD' }
+                ]
+            },
+            '50Y_REC_CHECK': {
+                question: "Apakah sudah 50 tahun sejak karya pertama kali difiksasi (direkam)?",
+                options: [
+                    { text: "Ya", result: 'PUBLIC_DOMAIN', law: 'Pasal 63 UUHC No. 28/2014' },
+                    { text: "Belum", result: 'NOT_PD' }
+                ]
+            },
+            '20Y_CHECK': {
+                question: "Apakah sudah 20 tahun sejak siaran pertama kali disiarkan?",
+                options: [
+                    { text: "Ya", result: 'PUBLIC_DOMAIN', law: 'Pasal 63 ayat 1 huruf c UUHC No. 28/2014' },
+                    { text: "Belum", result: 'NOT_PD' }
+                ]
+            }
+        };
+
+        function render() {
+            const container = document.getElementById('app-content');
+            const state = states[currentState];
+            
+            // Update progress
+            const progress = document.getElementById('progress');
+            const steps = Object.keys(states).length;
+            const currentIdx = Object.keys(states).indexOf(currentState);
+            progress.style.width = ((currentIdx + 1) / steps * 100) + '%';
+
+            // Show/Hide Back Button
+            document.getElementById('btn-back').classList.toggle('hidden', history.length === 0);
+
+            container.innerHTML = `
+                <div class="fade-in">
+                    <h2 class="text-xl font-semibold mb-6 text-slate-700 leading-tight">${state.question}</h2>
+                    <div class="grid gap-3">
+                        ${state.options.map((opt, i) => `
+                            <button onclick="handleChoice(${i})" class="flex items-center p-4 border-2 border-slate-100 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all text-left group">
+                                ${opt.icon ? `<span class="material-icons mr-3 text-slate-400 group-hover:text-indigo-600">${opt.icon}</span>` : ''}
+                                <span class="font-medium text-slate-600 group-hover:text-indigo-700">${opt.text}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleChoice(index) {
+            const choice = states[currentState].options[index];
+            history.push(currentState);
+
+            if (choice.result) {
+                showResult(choice.result, choice.law);
+            } else {
+                currentState = choice.next;
+                render();
+            }
+        }
+
+        function showResult(type, law) {
+            const container = document.getElementById('app-content');
+            document.getElementById('progress').style.width = '100%';
+            
+            if (type === 'PUBLIC_DOMAIN') {
+                container.innerHTML = `
+                    <div class="text-center fade-in">
+                        <span class="material-icons text-7xl text-green-500 mb-4">check_circle</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">Sudah Domain Publik!</h2>
+                        <p class="text-slate-600 mb-6">Karya ini bebas digunakan tanpa perlu meminta izin atau membayar royalti.</p>
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-100 text-sm text-green-800">
+                            <strong>Dasar Hukum:</strong><br>${law}
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="text-center fade-in">
+                        <span class="material-icons text-7xl text-amber-500 mb-4">lock</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">Masih Dilindungi</h2>
+                        <p class="text-slate-600 mb-6">Karya ini belum menjadi domain publik. Anda memerlukan izin dari pemegang hak cipta untuk menggunakannya secara komersial.</p>
+                        <button onclick="resetApp()" class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition">Cek Karya Lain</button>
+                    </div>
+                `;
+            }
+        }
+
+        function goBack() {
+            if (history.length > 0) {
+                currentState = history.pop();
+                render();
+            }
+        }
+
+        function resetApp() {
+            history = [];
+            currentState = 'START';
+            render();
+        }
+
+        // Jalankan aplikasi pertama kali
+        render();
+    </script>
+</body>
+</html>
