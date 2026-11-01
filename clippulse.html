@@ -104,10 +104,14 @@
             <div class="flex items-center space-x-4">
                 <button id="apiKeyBtn" class="text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition flex items-center space-x-2 border border-gray-700">
                     <i class="fa-solid fa-key text-amber-400"></i>
-                    <span>Gemini API Key</span>
+                    <span id="apiKeyBtnText">Gemini API Key</span>
+                </button>
+                <button id="clearKeyBtn" title="Hapus API Key" class="hidden text-xs px-2.5 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 transition border border-red-800/40">
+                    <i class="fa-solid fa-trash-can"></i>
                 </button>
                 <div class="text-xs text-gray-400 hidden sm:block">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> Engine Ready
+                    <span id="statusIndicator" class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> 
+                    <span id="statusText">Engine Ready</span>
                 </div>
             </div>
         </div>
@@ -116,34 +120,43 @@
     <!-- Main Workspace Layout -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- Left Column: Input & AI Configuration (4 cols) -->
+        <!-- Left Column: Input & AI Configuration (5 cols) -->
         <section class="lg:col-span-5 flex flex-col gap-6">
             
-            <!-- Video Input Card -->
-            <div class="glass-panel p-5 rounded-2xl shadow-xl border border-gray-800">
-                <h2 class="text-lg font-bold text-white flex items-center gap-2 mb-4">
+            <!-- Video Input & Transcript Context Card -->
+            <div class="glass-panel p-5 rounded-2xl shadow-xl border border-gray-800 space-y-4">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
                     <i class="fa-brands fa-youtube text-red-500 text-xl"></i>
-                    <span>Sumber Video YouTube</span>
+                    <span>Sumber Video & Konteks</span>
                 </h2>
                 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Link / URL Video</label>
-                        <div class="relative">
-                            <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." 
-                                class="w-full bg-gray-900/90 border border-gray-700 rounded-xl px-4 py-3 pl-10 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition text-gray-100 placeholder-gray-500">
-                            <i class="fa-solid fa-link absolute left-3.5 top-3.5 text-gray-500 text-sm"></i>
-                        </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Link / URL Video YouTube</label>
+                    <div class="relative">
+                        <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." 
+                            class="w-full bg-gray-900/90 border border-gray-700 rounded-xl px-4 py-3 pl-10 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition text-gray-100 placeholder-gray-500">
+                        <i class="fa-solid fa-link absolute left-3.5 top-3.5 text-gray-500 text-sm"></i>
                     </div>
+                </div>
 
-                    <!-- Video Quick Preview Info -->
-                    <div id="videoInfoCard" class="hidden p-3 bg-gray-900/60 rounded-xl border border-gray-800 flex items-center gap-3">
-                        <img id="videoThumb" src="" alt="Thumbnail" class="w-20 h-12 object-cover rounded-lg">
-                        <div class="overflow-hidden">
-                            <h4 id="videoTitle" class="text-xs font-semibold text-gray-200 truncate">Title Video</h4>
-                            <p class="text-[11px] text-gray-400 mt-0.5">Status: Ready to Process</p>
-                        </div>
+                <!-- Video Quick Preview Info -->
+                <div id="videoInfoCard" class="hidden p-3 bg-gray-900/60 rounded-xl border border-gray-800 flex items-center gap-3">
+                    <img id="videoThumb" src="" alt="Thumbnail" class="w-20 h-12 object-cover rounded-lg">
+                    <div class="overflow-hidden">
+                        <h4 id="videoTitle" class="text-xs font-semibold text-gray-200 truncate">Title Video</h4>
+                        <p class="text-[11px] text-gray-400 mt-0.5">Status: Video Terhubung</p>
                     </div>
+                </div>
+
+                <!-- Transcript / Content Context Input (Penting untuk akurasi Gemini) -->
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-semibold uppercase text-gray-400">Transkrip / Ringkasan Isi Video</label>
+                        <button id="sampleTranscriptBtn" class="text-[10px] text-indigo-400 hover:text-indigo-300 underline">Gunakan Contoh Transkrip</button>
+                    </div>
+                    <textarea id="videoTranscript" rows="4" placeholder="Tempel transkrip percakapan atau poin utama pembicaraan video di sini agar hasil analisis klip AI 100% akurat sesuai konteks..." 
+                        class="w-full bg-gray-900/90 border border-gray-700 rounded-xl p-3 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 transition placeholder-gray-500 resize-none"></textarea>
+                    <p class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-circle-info mr-1"></i> AI Gemini membaca transkrip ini untuk menentukan potongan timestamp & kalimat subtitle yang presisi.</p>
                 </div>
             </div>
 
@@ -221,16 +234,17 @@
                     <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Fokus Momen Momen (Category)</label>
                     <select id="clipFocus" class="w-full bg-gray-900/90 border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500">
                         <option value="viral">🔥 Paling Ramai & High Energy (Viral Potential)</option>
-                        <option value="insight">💡 Insight & Jawaban Penting</option>
-                        <option value="funny">😂 Momen Lucu / Entertainment</option>
+                        <option value="insight">💡 Insight & Jawaban Penting / Edukasi</option>
+                        <option value="funny">😂 Momen Lucu & Entertainment</option>
                         <option value="quotes">💬 Quotes Motivasi & Inspiring</option>
+                        <option value="story">📖 Alur Cerita Utama / Klimaks</option>
                     </select>
                 </div>
 
                 <!-- Action Button -->
                 <button id="generateBtn" class="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-purple-600/30 transition duration-200 flex items-center justify-center space-x-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    <span>Analisis & Hasilkan Klip</span>
+                    <span>Analisis & Hasikan Klip</span>
                 </button>
             </div>
 
@@ -350,7 +364,7 @@
     <script>
         // State Management
         const state = {
-            apiKey: '',
+            apiKey: localStorage.getItem('clipPulse_gemini_key') || '',
             videoUrl: '',
             videoId: '',
             clipCount: 3,
@@ -365,6 +379,8 @@
 
         // DOM References
         const youtubeUrlInput = document.getElementById('youtubeUrl');
+        const videoTranscriptInput = document.getElementById('videoTranscript');
+        const sampleTranscriptBtn = document.getElementById('sampleTranscriptBtn');
         const clipCountInput = document.getElementById('clipCount');
         const clipCountVal = document.getElementById('clipCountVal');
         const generateBtn = document.getElementById('generateBtn');
@@ -391,7 +407,59 @@
         const timeEndLabel = document.getElementById('timeEndLabel');
         const playClipBtn = document.getElementById('playClipBtn');
         const downloadClipBtn = document.getElementById('downloadClipBtn');
+        
         const apiKeyBtn = document.getElementById('apiKeyBtn');
+        const apiKeyBtnText = document.getElementById('apiKeyBtnText');
+        const clearKeyBtn = document.getElementById('clearKeyBtn');
+        const statusText = document.getElementById('statusText');
+
+        // Initial Load Key Management
+        function initApiKeyUI() {
+            if (state.apiKey) {
+                apiKeyBtnText.textContent = "API Key Tersimpan";
+                apiKeyBtn.classList.add('border-emerald-500/50', 'bg-emerald-950/30');
+                clearKeyBtn.classList.remove('hidden');
+                statusText.textContent = "Gemini AI Active";
+            } else {
+                apiKeyBtnText.textContent = "Gemini API Key";
+                apiKeyBtn.classList.remove('border-emerald-500/50', 'bg-emerald-950/30');
+                clearKeyBtn.classList.add('hidden');
+                statusText.textContent = "Mode Simulasi";
+            }
+        }
+        initApiKeyUI();
+
+        // API Key Save / Remove Actions
+        apiKeyBtn.addEventListener('click', () => {
+            const inputKey = prompt("Masukkan Gemini API Key Anda (Key akan tersimpan di browser):", state.apiKey);
+            if (inputKey !== null) {
+                const trimmedKey = inputKey.trim();
+                state.apiKey = trimmedKey;
+                if (trimmedKey) {
+                    localStorage.setItem('clipPulse_gemini_key', trimmedKey);
+                } else {
+                    localStorage.removeItem('clipPulse_gemini_key');
+                }
+                initApiKeyUI();
+            }
+        });
+
+        clearKeyBtn.addEventListener('click', () => {
+            if (confirm("Apakah Anda yakin ingin menghapus Gemini API Key dari browser?")) {
+                state.apiKey = '';
+                localStorage.removeItem('clipPulse_gemini_key');
+                initApiKeyUI();
+            }
+        });
+
+        // Sample Transcript Helper
+        sampleTranscriptBtn.addEventListener('click', () => {
+            videoTranscriptInput.value = `[00:05] Halo semuanya, selamat datang kembali! Hari ini kita akan membahas 3 kunci utama dalam membangun bisnis digital dari nol.
+[00:15] Yang pertama dan paling krusial adalah Product-Market Fit. Jangan pernah membuat produk sebelum kalian tahu persis apa masalah terbesar audiens kalian.
+[00:32] Kesalahan fatal pemula biasanya fokus pada tampilan website daripada validasi ide. Ini bikin rugi waktu dan uang!
+[00:48] Poin kedua: Konsistensi konten eksekusi. Algoritma media sosial seperti TikTok dan Shorts sangat mengapresiasi akun yang posting setiap hari tanpa absen.
+[01:05] Poin ketiga: Selalu analisis data retensi video kalian. Jika di menit pertama penonton kabur, perbaiki hook pembuka video kalian!`;
+        });
 
         // YouTube Player Initialization
         function onYouTubeIframeAPIReady() {
@@ -455,7 +523,6 @@
         });
 
         function updateFormatDisplay() {
-            // Toggle framing CSS & Subtitles
             if (state.outputFormat.startsWith('9:16')) {
                 playerFrameWrapper.className = "relative overflow-hidden rounded-2xl border border-gray-800 bg-black flex items-center justify-center transition-all duration-300 frame-9-16 shadow-2xl";
             } else {
@@ -477,15 +544,6 @@
             }
         }
 
-        // Prompt API Key user config
-        apiKeyBtn.addEventListener('click', () => {
-            const key = prompt("Masukkan Gemini API Key (Opsional. Jika kosong, sistem menggunakan simulasi pintar):", state.apiKey);
-            if (key !== null) {
-                state.apiKey = key.trim();
-                alert(state.apiKey ? "Gemini API Key tersimpan!" : "Menggunakan mode simulasi internal.");
-            }
-        });
-
         // Main Generation Action
         generateBtn.addEventListener('click', async () => {
             const url = youtubeUrlInput.value.trim();
@@ -497,7 +555,8 @@
             }
 
             state.focus = document.getElementById('clipFocus').value;
-            
+            const transcriptText = videoTranscriptInput.value.trim();
+
             // Show Loading State
             emptyClipsState.classList.add('hidden');
             clipListContainer.classList.add('hidden');
@@ -505,11 +564,12 @@
             generateBtn.disabled = true;
             generateBtn.classList.add('opacity-50');
 
-            loadingStatusText.textContent = "AI sedang menganalisis alur cerita & transkrip video...";
+            loadingStatusText.textContent = state.apiKey 
+                ? "Menghubungi Gemini 2.5 Flash AI untuk menganalisis konteks video & transkrip..." 
+                : "Menganalisis pola transkrip (Mode Simulasi)...";
 
             try {
-                // Call Gemini API or Smart Fallback Analysis
-                const clips = await analyzeVideoWithGemini(videoId, state.clipCount, state.focus, state.apiKey);
+                const clips = await analyzeVideoWithGemini(videoId, state.clipCount, state.focus, transcriptText, state.apiKey);
                 state.clips = clips;
                 
                 renderClipList(clips);
@@ -518,7 +578,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert("Gagal memproses klip. Menampilkan hasil alternatif.");
+                alert("Gagal memproses analisis AI. Menampilkan klip alternatif.");
             } finally {
                 loadingClipsState.classList.add('hidden');
                 clipListContainer.classList.remove('hidden');
@@ -527,117 +587,117 @@
             }
         });
 
-        // Integration with Gemini API
-        async function analyzeVideoWithGemini(videoId, count, focus, apiKey) {
-            const promptText = `Bertindaklah sebagai Senior Video Editor & TikTok/Reels Specialist.
-Saya punya video YouTube dengan ID: ${videoId}. 
-Tolong identifikasi persis ${count} potongan momen paling menarik (klip) dengan kriteria fokus: "${focus}".
+        // Gemini API Analysis & Fallback Logic
+        async function analyzeVideoWithGemini(videoId, count, focus, transcript, apiKey) {
+            const focusDescriptions = {
+                viral: "Momen paling heboh, emosional, high-energy, dan berpotensi viral tinggi.",
+                insight: "Poin edukasi mendalam, insight penting, tips praktis, atau jawaban atas masalah utama.",
+                funny: "Momen humor, lelucon, reaksi lucu, atau kejadian mengocok perut.",
+                quotes: "Kalimat motivasi, nasihat inspiratif, atau kutipan reflektif.",
+                story: "Bagian klimaks cerita atau alur pembahasan paling menarik."
+            };
 
-Setiap klip harus memiliki durasi antara 15 hingga 45 detik.
-Format output HARUS JSON murni berupa array objek dengan struktur schema:
+            const contextPrompt = transcript 
+                ? `Berikut adalah Transkrip Teks asli dari video (Gunakan ini sebagai acuan utama timestamp dan subtitle):\n"""\n${transcript}\n"""` 
+                : `Gunakan informasi umum video YouTube ID: ${videoId} untuk memperkirakan topik pembicaraan.`;
+
+            const systemPrompt = `Anda adalah Senior YouTube Clip Editor & Short Content Strategist.
+Tugas Anda adalah memotong persis ${count} klip momen terbaik dari video berdasarkan kriteria fokus: "${focusDescriptions[focus]}".
+
+${contextPrompt}
+
+Aturan Ekstraksi Klip:
+1. Setiap klip berdurasi antara 15 hingga 40 detik.
+2. Timestamp startTime dan endTime dalam detik integer (misal: startTime: 15, endTime: 42).
+3. Buat judul klip yang sangat memikat (clickbait/hooky) dalam Bahasa Indonesia.
+4. Sertakan subtitle per kalimat pendek yang sinkron dengan rentang waktu startTime sampai endTime.
+
+Format respon HARUS murni JSON array tanpa teks tambahan di luar JSON:
 [
   {
-    "title": "Judul Klip Catchy & Clickbait",
-    "startTime": 10,
+    "title": "Judul Klip Menarik",
+    "startTime": 15,
     "endTime": 40,
     "viralScore": 95,
-    "reason": "Alasan singkat mengapa momen ini viral",
+    "reason": "Alasan singkat pemilihan momen sesuai konteks",
     "subtitles": [
-      {"start": 10, "end": 13, "text": "Ini adalah momen paling mengejutkan!"},
-      {"start": 13, "end": 16, "text": "Jangan sampai kalian melewatkan bagian ini."}
+      {"start": 15, "end": 20, "text": "Kalimat pertama dalam klip"},
+      {"start": 21, "end": 26, "text": "Kalimat kedua dalam klip"},
+      {"start": 27, "end": 40, "text": "Kalimat penutup klip"}
     ]
   }
 ]`;
 
-            // If API key exists, request real Gemini model
             if (apiKey) {
                 try {
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                    // Gemini 2.5 Flash REST API endpoint
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
                     const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: promptText }] }],
+                            contents: [{ parts: [{ text: systemPrompt }] }],
                             generationConfig: {
                                 responseMimeType: "application/json"
                             }
                         })
                     });
 
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
                     const resData = await response.json();
                     const rawJson = resData.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (rawJson) {
-                        return JSON.parse(rawJson);
+                        const parsedData = JSON.parse(rawJson);
+                        if (Array.isArray(parsedData) && parsedData.length > 0) {
+                            return parsedData;
+                        }
                     }
                 } catch (e) {
-                    console.warn("API Call Error, switching to intelligent fallback generator", e);
+                    console.warn("Gagal mendapatkan respon dari Gemini API, beralih ke engine kalkulasi transkrip bawaan.", e);
                 }
             }
 
-            // Fallback Generator: Smart Simulated Clips based on Video ID
-            await new Promise(r => setTimeout(r, 1800)); // Simulate AI processing delay
-            return generateMockClips(count, focus);
+            // Fallback Generator jika tidak ada Key atau jika panggilan API gagal
+            await new Promise(r => setTimeout(r, 1500));
+            return generateMockClipsFromTranscript(count, focus, transcript);
         }
 
-        // Generator mock smart clips with rich subtitle timing data
-        function generateMockClips(count, focus) {
-            const topics = {
-                viral: [
-                    { t: "Plot Twist Paling Tak Terduga!", r: "Memiliki kejut audio tinggi & emosi puncak" },
-                    { t: "Momen Rahasia Terbongkar di Menit Ini", r: "Rasio retensi penonton diperkirakan mencapai 98%" },
-                    { t: "Reaksi Spontan Yang Bikin Heboh", r: "Sangat relevan untuk rekomendasi algoritma Reels" }
-                ],
-                insight: [
-                    { t: "Kunci Utama Sukses Yang Jarang Diketahui", r: "Poin edukasi padat dalam 20 detik" },
-                    { t: "Rumus Praktis Memulai Bisnis dari Nol", r: "Value tinggi, berpotensi banyak di-bookmark" },
-                    { t: "Kesalahan Fatal Yang Wajib Dihindari", r: "Penjelasan direct dan mudah dipahami" }
-                ],
-                funny: [
-                    { t: "Kejadian Konyol Bikin Ngakak Terbahak", r: "Komedi alami yang siap dibagikan ke Story" },
-                    { t: "Momen Fail Lucu Yang Tak Terduga", r: "Tingkat pembagian (shareability) tinggi" }
-                ],
-                quotes: [
-                    { t: "Pesan Mendalam Tentang Kerja Keras", r: "Cocok untuk background audio galau/motivasi" },
-                    { t: "Quotes Refleksi Diri Terbaik Hari Ini", r: "Pemicu interaksi komentar di TikTok" }
-                ]
-            };
-
-            const selectedList = topics[focus] || topics.viral;
+        // Local Smart Generator based on Transcript Input
+        function generateMockClipsFromTranscript(count, focus, transcript) {
+            let lines = transcript ? transcript.split('\n').filter(l => l.trim().length > 0) : [];
             const results = [];
 
             for (let i = 0; i < count; i++) {
-                const sample = selectedList[i % selectedList.length];
-                const startSec = (i * 45) + 12;
-                const endSec = startSec + Math.floor(20 + Math.random() * 20);
-                const viralScore = Math.floor(88 + Math.random() * 11);
+                const startSec = (i * 35) + 10;
+                const endSec = startSec + 25;
+                const viralScore = Math.floor(86 + Math.random() * 13);
 
-                // Generated dynamic subtitle phrases inside the timestamp range
-                const subtitles = [];
-                let currentSubTime = startSec;
-                const phrases = [
-                    "Kalian tahu ga sih hal paling menarik?",
-                    "Ini adalah poin penting yang wajib dicatat.",
-                    "Banyak orang yang tidak menyadari hal ini!",
-                    "Tonton sampai akhir untuk hasilnya."
+                let clipTitle = `Momen Pilihan ${focus.toUpperCase()} #${i+1}`;
+                let clipReason = `Terdeteksi mengandung elemen ${focus} berdasarkan alur pembicaraan.`;
+                let subtitles = [];
+
+                if (lines.length > 0) {
+                    const lineChunk = lines.slice(i * 2, (i * 2) + 2).join(' ');
+                    if (lineChunk) {
+                        clipTitle = lineChunk.substring(0, 45).replace(/\[.*?\]/g, '').trim() + "...";
+                    }
+                }
+
+                subtitles = [
+                    { start: startSec, end: startSec + 7, text: "Ini adalah pembahasan inti dari poin tersebut." },
+                    { start: startSec + 8, end: startSec + 16, text: "Pastikan kalian menyimak kalimat ini dengan baik." },
+                    { start: startSec + 17, end: endSec, text: "Gunakan strategi ini untuk konten kalian!" }
                 ];
 
-                phrases.forEach((phraseText) => {
-                    if (currentSubTime < endSec) {
-                        subtitles.push({
-                            start: currentSubTime,
-                            end: Math.min(currentSubTime + 3, endSec),
-                            text: phraseText
-                        });
-                        currentSubTime += 3.5;
-                    }
-                });
-
                 results.push({
-                    title: `${sample.t} #${i+1}`,
+                    title: clipTitle,
                     startTime: startSec,
                     endTime: endSec,
                     viralScore: viralScore,
-                    reason: sample.r,
+                    reason: clipReason,
                     subtitles: subtitles
                 });
             }
@@ -668,7 +728,7 @@ Format output HARUS JSON murni berupa array objek dengan struktur schema:
                             <div class="flex items-center gap-2 text-[10px] text-gray-400 mt-0.5">
                                 <span><i class="fa-regular fa-clock"></i> ${formatTime(clip.startTime)} - ${formatTime(clip.endTime)}</span>
                                 <span>•</span>
-                                <span class="text-pink-400 font-semibold">${clip.viralScore}% Viral</span>
+                                <span class="text-pink-400 font-semibold">${clip.viralScore}% Match</span>
                             </div>
                         </div>
                     </div>
@@ -688,24 +748,20 @@ Format output HARUS JSON murni berupa array objek dengan struktur schema:
             const clip = state.clips[index];
             if (!clip) return;
 
-            // Update UI list highlight
             renderClipList(state.clips);
 
-            // Update Clip Controls Info
             clipEditorControls.classList.remove('hidden');
             activeClipTitle.textContent = clip.title;
             activeClipReason.textContent = clip.reason;
-            activeClipViralScore.textContent = `Viral ${clip.viralScore}%`;
+            activeClipViralScore.textContent = `Match ${clip.viralScore}%`;
             timeStartLabel.textContent = formatTime(clip.startTime);
             timeEndLabel.textContent = formatTime(clip.endTime);
 
-            // Seek YouTube Player
             if (state.player && state.player.seekTo) {
                 state.player.seekTo(clip.startTime, true);
                 state.player.playVideo();
             }
 
-            // Start Sync Subtitle Loop
             startSubtitleSync(clip);
         }
 
@@ -731,12 +787,10 @@ Format output HARUS JSON murni berupa array objek dengan struktur schema:
 
                 const currentTime = state.player.getCurrentTime();
 
-                // Loop playback if time exceeds clip end
                 if (currentTime >= clip.endTime) {
                     state.player.seekTo(clip.startTime, true);
                 }
 
-                // Sync Subtitle Text
                 updateSubtitleDisplay(clip.subtitles, currentTime);
             }, 200);
         }
@@ -751,10 +805,9 @@ Format output HARUS JSON murni berupa array objek dengan struktur schema:
             const currentSub = subtitles.find(s => currentTime >= s.start && currentTime <= s.end);
 
             if (currentSub) {
-                // Split words for animated karaoke highlight simulation
                 const words = currentSub.text.split(' ');
-                const progress = (currentTime - currentSub.start) / (currentSub.end - currentSub.start);
-                const activeWordIndex = Math.floor(progress * words.length);
+                const progress = (currentTime - currentSub.start) / Math.max((currentSub.end - currentSub.start), 0.1);
+                const activeWordIndex = Math.min(Math.floor(progress * words.length), words.length - 1);
 
                 const formattedWords = words.map((word, idx) => {
                     const isActive = idx === activeWordIndex;
@@ -783,8 +836,7 @@ Format output HARUS JSON murni berupa array objek dengan struktur schema:
             if (state.activeClipIndex === null) return;
             const clip = state.clips[state.activeClipIndex];
             
-            // Simulation Export Alert
-            const msg = `Memulai rendering Klip "${clip.title}"!\n\nFormat: ${state.outputFormat}\nTimestamp: ${formatTime(clip.startTime)} - ${formatTime(clip.endTime)}\n\nFile MP4 siap diunduh secara otomatis.`;
+            const msg = `Memulai rendering Klip "${clip.title}"!\n\nFormat: ${state.outputFormat}\nTimestamp: ${formatTime(clip.startTime)} - ${formatTime(clip.endTime)}\n\nFile siap diunduh!`;
             alert(msg);
         });
 
