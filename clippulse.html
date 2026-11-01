@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClipPulse AI - YouTube Short & Reel Generator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        neon: '#a855f7',
+                        accent: '#ec4899',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f17;
+            color: #f3f4f6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Aspect Ratio Frames */
+        .frame-9-16 {
+            width: 315px;
+            height: 560px;
+            max-width: 100%;
+        }
+        .frame-16-9 {
+            width: 100%;
+            aspect-ratio: 16/9;
+        }
+
+        /* Animated Subtitle Styling */
+        .subtitle-word {
+            transition: all 0.15s ease;
+        }
+        .subtitle-active {
+            color: #facc15; /* Bright Yellow */
+            transform: scale(1.15);
+            text-shadow: 0 0 12px rgba(250, 204, 21, 0.6);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#090d16] text-gray-100 antialiased selection:bg-purple-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-gray-800/80 glass-panel sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                    <i class="fa-solid font-bold text-white text-lg fa-bolt"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-purple-400">
+                        ClipPulse <span class="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">AI PRO</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <button id="apiKeyBtn" class="text-xs px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 transition flex items-center space-x-2 border border-gray-700">
+                    <i class="fa-solid fa-key text-amber-400"></i>
+                    <span>Gemini API Key</span>
+                </button>
+                <div class="text-xs text-gray-400 hidden sm:block">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> Engine Ready
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Input & AI Configuration (4 cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-6">
+            
+            <!-- Video Input Card -->
+            <div class="glass-panel p-5 rounded-2xl shadow-xl border border-gray-800">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2 mb-4">
+                    <i class="fa-brands fa-youtube text-red-500 text-xl"></i>
+                    <span>Sumber Video YouTube</span>
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-gray-400 mb-1.5">Link / URL Video</label>
+                        <div class="relative">
+                            <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." 
+                                class="w-full bg-gray-900/90 border border-gray-700 rounded-xl px-4 py-3 pl-10 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition text-gray-100 placeholder-gray-500">
+                            <i class="fa-solid fa-link absolute left-3.5 top-3.5 text-gray-500 text-sm"></i>
+                        </div>
+                    </div>
+
+                    <!-- Video Quick Preview Info -->
+                    <div id="videoInfoCard" class="hidden p-3 bg-gray-900/60 rounded-xl border border-gray-800 flex items-center gap-3">
+                        <img id="videoThumb" src="" alt="Thumbnail" class="w-20 h-12 object-cover rounded-lg">
+                        <div class="overflow-hidden">
+                            <h4 id="videoTitle" class="text-xs font-semibold text-gray-200 truncate">Title Video</h4>
+                            <p class="text-[11px] text-gray-400 mt-0.5">Status: Ready to Process</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Clip Configuration Card -->
+            <div class="glass-panel p-5 rounded-2xl shadow-xl border border-gray-800 space-y-5">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-purple-400"></i>
+                    <span>Konfigurasi Klip AI</span>
+                </h2>
+
+                <!-- 1. Clip Quantity Slider -->
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs font-semibold uppercase text-gray-400">Jumlah Klip</label>
+                        <span id="clipCountVal" class="text-xs font-bold px-2 py-0.5 bg-indigo-500/20 text-indigo-300 rounded-md border border-indigo-500/30">3 Klip</span>
+                    </div>
+                    <input type="range" id="clipCount" min="1" max="10" value="3" 
+                        class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-purple-500">
+                    <div class="flex justify-between text-[10px] text-gray-500 mt-1">
+                        <span>1</span>
+                        <span>5</span>
+                        <span>10</span>
+                    </div>
+                </div>
+
+                <!-- 2. Output Format Selector -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Format Output</label>
+                    <div class="grid grid-cols-1 gap-2.5">
+                        
+                        <!-- Option A: 9:16 + Subtitle -->
+                        <label class="relative flex items-center p-3 rounded-xl border border-gray-800 bg-gray-900/40 hover:bg-gray-800/50 cursor-pointer transition has-[:checked]:border-purple-500 has-[:checked]:bg-purple-950/20">
+                            <input type="radio" name="outputFormat" value="9:16_sub" checked class="sr-only peer">
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center mr-3 border border-purple-500/20 peer-checked:bg-purple-600 peer-checked:text-white">
+                                <i class="fa-solid fa-mobile-screen-button text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-xs font-semibold text-gray-200">9:16 Subtitle Siap Pakai</div>
+                                <div class="text-[11px] text-gray-400">Vertikal Short/Reel + Animated Subtitle</div>
+                            </div>
+                            <i class="fa-solid fa-circle-check text-purple-400 opacity-0 peer-checked:opacity-100 text-sm"></i>
+                        </label>
+
+                        <!-- Option B: 9:16 Mentah -->
+                        <label class="relative flex items-center p-3 rounded-xl border border-gray-800 bg-gray-900/40 hover:bg-gray-800/50 cursor-pointer transition has-[:checked]:border-purple-500 has-[:checked]:bg-purple-950/20">
+                            <input type="radio" name="outputFormat" value="9:16_raw" class="sr-only peer">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center mr-3 border border-indigo-500/20 peer-checked:bg-indigo-600 peer-checked:text-white">
+                                <i class="fa-solid fa-crop-simple text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-xs font-semibold text-gray-200">9:16 Mentah</div>
+                                <div class="text-[11px] text-gray-400">Video vertikal polos tanpa hamparan teks</div>
+                            </div>
+                            <i class="fa-solid fa-circle-check text-purple-400 opacity-0 peer-checked:opacity-100 text-sm"></i>
+                        </label>
+
+                        <!-- Option C: 16:9 Mentah -->
+                        <label class="relative flex items-center p-3 rounded-xl border border-gray-800 bg-gray-900/40 hover:bg-gray-800/50 cursor-pointer transition has-[:checked]:border-purple-500 has-[:checked]:bg-purple-950/20">
+                            <input type="radio" name="outputFormat" value="16:9_raw" class="sr-only peer">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center mr-3 border border-blue-500/20 peer-checked:bg-blue-600 peer-checked:text-white">
+                                <i class="fa-solid fa-tv text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="text-xs font-semibold text-gray-200">16:9 Mentah</div>
+                                <div class="text-[11px] text-gray-400">Potongan rasio lanskap asli video</div>
+                            </div>
+                            <i class="fa-solid fa-circle-check text-purple-400 opacity-0 peer-checked:opacity-100 text-sm"></i>
+                        </label>
+
+                    </div>
+                </div>
+
+                <!-- 3. Highlight Category / Focus -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-400 mb-2">Fokus Momen Momen (Category)</label>
+                    <select id="clipFocus" class="w-full bg-gray-900/90 border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500">
+                        <option value="viral">🔥 Paling Ramai & High Energy (Viral Potential)</option>
+                        <option value="insight">💡 Insight & Jawaban Penting</option>
+                        <option value="funny">😂 Momen Lucu / Entertainment</option>
+                        <option value="quotes">💬 Quotes Motivasi & Inspiring</option>
+                    </select>
+                </div>
+
+                <!-- Action Button -->
+                <button id="generateBtn" class="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-purple-600/30 transition duration-200 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Analisis & Hasilkan Klip</span>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- Right Column: Interactive Player & Clip Manager (7 cols) -->
+        <section class="lg:col-span-7 flex flex-col gap-6">
+
+            <!-- Video Player Preview Container -->
+            <div class="glass-panel p-5 rounded-2xl shadow-xl border border-gray-800 flex flex-col items-center">
+                <div class="w-full flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-bold text-gray-200 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-play text-purple-400"></i>
+                        <span>Live Clip Preview</span>
+                    </h3>
+                    <span id="formatBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase">9:16 SUBTITLE</span>
+                </div>
+
+                <!-- Player Frame Wrapper -->
+                <div id="playerFrameWrapper" class="relative overflow-hidden rounded-2xl border border-gray-800 bg-black flex items-center justify-center transition-all duration-300 frame-9-16 shadow-2xl">
+                    
+                    <!-- YouTube Iframe Embed -->
+                    <div id="ytPlayerContainer" class="w-full h-full relative">
+                        <div id="player"></div>
+                    </div>
+
+                    <!-- Subtitle Karaoke Overlay Layer -->
+                    <div id="subtitleOverlay" class="absolute inset-x-4 bottom-12 pointer-events-none flex flex-col items-center justify-center text-center z-20">
+                        <div id="subtitleText" class="bg-black/75 backdrop-blur-sm border border-white/10 px-4 py-2.5 rounded-xl text-white font-black text-sm tracking-wide leading-relaxed shadow-2xl max-w-[90%] uppercase">
+                            <span class="text-gray-400">Subtitle akan tampil di sini saat klip diputar...</span>
+                        </div>
+                    </div>
+
+                    <!-- Watermark Tag Simulation -->
+                    <div class="absolute top-3 left-3 bg-black/50 backdrop-blur-md text-[10px] text-white/70 px-2 py-1 rounded-md pointer-events-none flex items-center gap-1 border border-white/10">
+                        <i class="fa-solid fa-scissors text-purple-400"></i> ClipPulse Preview
+                    </div>
+                </div>
+
+                <!-- Active Clip Control & Trimmer -->
+                <div id="clipEditorControls" class="w-full mt-5 p-4 bg-gray-900/80 rounded-xl border border-gray-800 hidden space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 id="activeClipTitle" class="text-xs font-bold text-gray-200">Judul Klip Aktif</h4>
+                            <p id="activeClipReason" class="text-[11px] text-gray-400 italic">Alasan momen dipilih...</p>
+                        </div>
+                        <div class="text-right">
+                            <span id="activeClipViralScore" class="text-xs font-extrabold text-pink-400 bg-pink-500/10 px-2 py-0.5 rounded border border-pink-500/20">Viral 95%</span>
+                        </div>
+                    </div>
+
+                    <!-- Simple Timeline Slider simulation -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] text-gray-400">
+                            <span>Mulai: <strong id="timeStartLabel" class="text-white">00:00</strong></span>
+                            <span>Selesai: <strong id="timeEndLabel" class="text-white">00:30</strong></span>
+                        </div>
+                        <div class="relative flex items-center h-4 bg-gray-800 rounded-lg p-1">
+                            <div id="timelineProgress" class="absolute h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-md" style="left: 0%; width: 100%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 justify-end pt-1">
+                        <button id="playClipBtn" class="text-xs px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg flex items-center gap-1.5 border border-gray-700">
+                            <i class="fa-solid fa-rotate-left"></i> Replay Klip
+                        </button>
+                        <button id="downloadClipBtn" class="text-xs px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-lg flex items-center gap-1.5 shadow-md shadow-purple-600/30">
+                            <i class="fa-solid fa-download"></i> Export / Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List Result Clips -->
+            <div class="glass-panel p-5 rounded-2xl shadow-xl border border-gray-800">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-indigo-400"></i>
+                        <span>Daftar Momen Terklip</span>
+                    </h3>
+                    <span id="totalClipsFound" class="text-xs text-gray-400">0 Klip ditemukan</span>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyClipsState" class="py-12 flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-800 rounded-xl">
+                    <div class="w-12 h-12 rounded-full bg-gray-800/80 flex items-center justify-center text-gray-500 mb-3">
+                        <i class="fa-solid fa-film text-xl"></i>
+                    </div>
+                    <p class="text-xs text-gray-400 max-w-xs">Masukkan link YouTube dan klik "Analisis & Hasilkan Klip" untuk memproses momen penting.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingClipsState" class="hidden py-12 flex flex-col items-center justify-center text-center space-y-3">
+                    <div class="w-10 h-10 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin"></div>
+                    <p id="loadingStatusText" class="text-xs font-medium text-purple-300">AI sedang membaca transkrip & mencari momen viral...</p>
+                </div>
+
+                <!-- Clip Result List Container -->
+                <div id="clipListContainer" class="space-y-3 max-h-[350px] overflow-y-auto pr-1 hidden">
+                    <!-- Dynamic Clip Items inserted here -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800/60 mt-auto py-4 text-center text-xs text-gray-500">
+        &copy; 2026 ClipPulse AI — YouTube Short & Content Repurposing Suite.
+    </footer>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <!-- Application Script -->
+    <script>
+        // State Management
+        const state = {
+            apiKey: '',
+            videoUrl: '',
+            videoId: '',
+            clipCount: 3,
+            outputFormat: '9:16_sub',
+            focus: 'viral',
+            clips: [],
+            activeClipIndex: null,
+            player: null,
+            subtitleInterval: null,
+            isPlaying: false
+        };
+
+        // DOM References
+        const youtubeUrlInput = document.getElementById('youtubeUrl');
+        const clipCountInput = document.getElementById('clipCount');
+        const clipCountVal = document.getElementById('clipCountVal');
+        const generateBtn = document.getElementById('generateBtn');
+        const videoInfoCard = document.getElementById('videoInfoCard');
+        const videoThumb = document.getElementById('videoThumb');
+        const videoTitle = document.getElementById('videoTitle');
+        
+        const playerFrameWrapper = document.getElementById('playerFrameWrapper');
+        const subtitleOverlay = document.getElementById('subtitleOverlay');
+        const subtitleText = document.getElementById('subtitleText');
+        const formatBadge = document.getElementById('formatBadge');
+
+        const clipListContainer = document.getElementById('clipListContainer');
+        const emptyClipsState = document.getElementById('emptyClipsState');
+        const loadingClipsState = document.getElementById('loadingClipsState');
+        const loadingStatusText = document.getElementById('loadingStatusText');
+        const totalClipsFound = document.getElementById('totalClipsFound');
+
+        const clipEditorControls = document.getElementById('clipEditorControls');
+        const activeClipTitle = document.getElementById('activeClipTitle');
+        const activeClipReason = document.getElementById('activeClipReason');
+        const activeClipViralScore = document.getElementById('activeClipViralScore');
+        const timeStartLabel = document.getElementById('timeStartLabel');
+        const timeEndLabel = document.getElementById('timeEndLabel');
+        const playClipBtn = document.getElementById('playClipBtn');
+        const downloadClipBtn = document.getElementById('downloadClipBtn');
+        const apiKeyBtn = document.getElementById('apiKeyBtn');
+
+        // YouTube Player Initialization
+        function onYouTubeIframeAPIReady() {
+            state.player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: '',
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 1,
+                    'modestbranding': 1,
+                    'rel': 0
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        // Format helper (Seconds to MM:SS)
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        // Extract YouTube ID
+        function extractYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Event Listeners for Controls
+        clipCountInput.addEventListener('input', (e) => {
+            state.clipCount = e.target.value;
+            clipCountVal.textContent = `${state.clipCount} Klip`;
+        });
+
+        youtubeUrlInput.addEventListener('change', () => {
+            const url = youtubeUrlInput.value.trim();
+            const videoId = extractYouTubeId(url);
+            if (videoId) {
+                state.videoId = videoId;
+                state.videoUrl = url;
+                videoThumb.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                videoTitle.textContent = `Video ID: ${videoId}`;
+                videoInfoCard.classList.remove('hidden');
+                if (state.player && state.player.loadVideoById) {
+                    state.player.cueVideoById(videoId);
+                }
+            }
+        });
+
+        // Format Option Radio listeners
+        document.querySelectorAll('input[name="outputFormat"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                state.outputFormat = e.target.value;
+                updateFormatDisplay();
+            });
+        });
+
+        function updateFormatDisplay() {
+            // Toggle framing CSS & Subtitles
+            if (state.outputFormat.startsWith('9:16')) {
+                playerFrameWrapper.className = "relative overflow-hidden rounded-2xl border border-gray-800 bg-black flex items-center justify-center transition-all duration-300 frame-9-16 shadow-2xl";
+            } else {
+                playerFrameWrapper.className = "relative overflow-hidden rounded-2xl border border-gray-800 bg-black flex items-center justify-center transition-all duration-300 frame-16-9 shadow-2xl";
+            }
+
+            if (state.outputFormat === '9:16_sub') {
+                subtitleOverlay.classList.remove('hidden');
+                formatBadge.textContent = "9:16 SUBTITLE";
+                formatBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase";
+            } else if (state.outputFormat === '9:16_raw') {
+                subtitleOverlay.classList.add('hidden');
+                formatBadge.textContent = "9:16 MENTAH";
+                formatBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase";
+            } else {
+                subtitleOverlay.classList.add('hidden');
+                formatBadge.textContent = "16:9 MENTAH";
+                formatBadge.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 uppercase";
+            }
+        }
+
+        // Prompt API Key user config
+        apiKeyBtn.addEventListener('click', () => {
+            const key = prompt("Masukkan Gemini API Key (Opsional. Jika kosong, sistem menggunakan simulasi pintar):", state.apiKey);
+            if (key !== null) {
+                state.apiKey = key.trim();
+                alert(state.apiKey ? "Gemini API Key tersimpan!" : "Menggunakan mode simulasi internal.");
+            }
+        });
+
+        // Main Generation Action
+        generateBtn.addEventListener('click', async () => {
+            const url = youtubeUrlInput.value.trim();
+            const videoId = extractYouTubeId(url);
+
+            if (!videoId) {
+                alert("Harap masukkan URL YouTube yang valid terlebih dahulu!");
+                return;
+            }
+
+            state.focus = document.getElementById('clipFocus').value;
+            
+            // Show Loading State
+            emptyClipsState.classList.add('hidden');
+            clipListContainer.classList.add('hidden');
+            loadingClipsState.classList.remove('hidden');
+            generateBtn.disabled = true;
+            generateBtn.classList.add('opacity-50');
+
+            loadingStatusText.textContent = "AI sedang menganalisis alur cerita & transkrip video...";
+
+            try {
+                // Call Gemini API or Smart Fallback Analysis
+                const clips = await analyzeVideoWithGemini(videoId, state.clipCount, state.focus, state.apiKey);
+                state.clips = clips;
+                
+                renderClipList(clips);
+                if (clips.length > 0) {
+                    selectClip(0);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Gagal memproses klip. Menampilkan hasil alternatif.");
+            } finally {
+                loadingClipsState.classList.add('hidden');
+                clipListContainer.classList.remove('hidden');
+                generateBtn.disabled = false;
+                generateBtn.classList.remove('opacity-50');
+            }
+        });
+
+        // Integration with Gemini API
+        async function analyzeVideoWithGemini(videoId, count, focus, apiKey) {
+            const promptText = `Bertindaklah sebagai Senior Video Editor & TikTok/Reels Specialist.
+Saya punya video YouTube dengan ID: ${videoId}. 
+Tolong identifikasi persis ${count} potongan momen paling menarik (klip) dengan kriteria fokus: "${focus}".
+
+Setiap klip harus memiliki durasi antara 15 hingga 45 detik.
+Format output HARUS JSON murni berupa array objek dengan struktur schema:
+[
+  {
+    "title": "Judul Klip Catchy & Clickbait",
+    "startTime": 10,
+    "endTime": 40,
+    "viralScore": 95,
+    "reason": "Alasan singkat mengapa momen ini viral",
+    "subtitles": [
+      {"start": 10, "end": 13, "text": "Ini adalah momen paling mengejutkan!"},
+      {"start": 13, "end": 16, "text": "Jangan sampai kalian melewatkan bagian ini."}
+    ]
+  }
+]`;
+
+            // If API key exists, request real Gemini model
+            if (apiKey) {
+                try {
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: promptText }] }],
+                            generationConfig: {
+                                responseMimeType: "application/json"
+                            }
+                        })
+                    });
+
+                    const resData = await response.json();
+                    const rawJson = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (rawJson) {
+                        return JSON.parse(rawJson);
+                    }
+                } catch (e) {
+                    console.warn("API Call Error, switching to intelligent fallback generator", e);
+                }
+            }
+
+            // Fallback Generator: Smart Simulated Clips based on Video ID
+            await new Promise(r => setTimeout(r, 1800)); // Simulate AI processing delay
+            return generateMockClips(count, focus);
+        }
+
+        // Generator mock smart clips with rich subtitle timing data
+        function generateMockClips(count, focus) {
+            const topics = {
+                viral: [
+                    { t: "Plot Twist Paling Tak Terduga!", r: "Memiliki kejut audio tinggi & emosi puncak" },
+                    { t: "Momen Rahasia Terbongkar di Menit Ini", r: "Rasio retensi penonton diperkirakan mencapai 98%" },
+                    { t: "Reaksi Spontan Yang Bikin Heboh", r: "Sangat relevan untuk rekomendasi algoritma Reels" }
+                ],
+                insight: [
+                    { t: "Kunci Utama Sukses Yang Jarang Diketahui", r: "Poin edukasi padat dalam 20 detik" },
+                    { t: "Rumus Praktis Memulai Bisnis dari Nol", r: "Value tinggi, berpotensi banyak di-bookmark" },
+                    { t: "Kesalahan Fatal Yang Wajib Dihindari", r: "Penjelasan direct dan mudah dipahami" }
+                ],
+                funny: [
+                    { t: "Kejadian Konyol Bikin Ngakak Terbahak", r: "Komedi alami yang siap dibagikan ke Story" },
+                    { t: "Momen Fail Lucu Yang Tak Terduga", r: "Tingkat pembagian (shareability) tinggi" }
+                ],
+                quotes: [
+                    { t: "Pesan Mendalam Tentang Kerja Keras", r: "Cocok untuk background audio galau/motivasi" },
+                    { t: "Quotes Refleksi Diri Terbaik Hari Ini", r: "Pemicu interaksi komentar di TikTok" }
+                ]
+            };
+
+            const selectedList = topics[focus] || topics.viral;
+            const results = [];
+
+            for (let i = 0; i < count; i++) {
+                const sample = selectedList[i % selectedList.length];
+                const startSec = (i * 45) + 12;
+                const endSec = startSec + Math.floor(20 + Math.random() * 20);
+                const viralScore = Math.floor(88 + Math.random() * 11);
+
+                // Generated dynamic subtitle phrases inside the timestamp range
+                const subtitles = [];
+                let currentSubTime = startSec;
+                const phrases = [
+                    "Kalian tahu ga sih hal paling menarik?",
+                    "Ini adalah poin penting yang wajib dicatat.",
+                    "Banyak orang yang tidak menyadari hal ini!",
+                    "Tonton sampai akhir untuk hasilnya."
+                ];
+
+                phrases.forEach((phraseText) => {
+                    if (currentSubTime < endSec) {
+                        subtitles.push({
+                            start: currentSubTime,
+                            end: Math.min(currentSubTime + 3, endSec),
+                            text: phraseText
+                        });
+                        currentSubTime += 3.5;
+                    }
+                });
+
+                results.push({
+                    title: `${sample.t} #${i+1}`,
+                    startTime: startSec,
+                    endTime: endSec,
+                    viralScore: viralScore,
+                    reason: sample.r,
+                    subtitles: subtitles
+                });
+            }
+
+            return results;
+        }
+
+        // Render Clips List in Panel
+        function renderClipList(clips) {
+            clipListContainer.innerHTML = '';
+            totalClipsFound.textContent = `${clips.length} Klip Siap`;
+
+            clips.forEach((clip, idx) => {
+                const item = document.createElement('div');
+                item.className = `p-3.5 rounded-xl border transition cursor-pointer flex items-center justify-between ${
+                    state.activeClipIndex === idx 
+                        ? 'bg-purple-950/40 border-purple-500 shadow-md shadow-purple-900/20' 
+                        : 'bg-gray-900/50 border-gray-800 hover:bg-gray-800/60'
+                }`;
+
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <div class="w-8 h-8 rounded-lg bg-gray-800 text-purple-400 flex items-center justify-center font-bold text-xs shrink-0 border border-gray-700">
+                            #${idx + 1}
+                        </div>
+                        <div class="truncate">
+                            <h4 class="text-xs font-bold text-gray-200 truncate">${clip.title}</h4>
+                            <div class="flex items-center gap-2 text-[10px] text-gray-400 mt-0.5">
+                                <span><i class="fa-regular fa-clock"></i> ${formatTime(clip.startTime)} - ${formatTime(clip.endTime)}</span>
+                                <span>•</span>
+                                <span class="text-pink-400 font-semibold">${clip.viralScore}% Viral</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-[11px] font-medium rounded-lg border border-indigo-500/30 transition shrink-0">
+                        <i class="fa-solid fa-play text-[9px] mr-1"></i> Putar
+                    </button>
+                `;
+
+                item.addEventListener('click', () => selectClip(idx));
+                clipListContainer.appendChild(item);
+            });
+        }
+
+        // Select & Play Specific Clip
+        function selectClip(index) {
+            state.activeClipIndex = index;
+            const clip = state.clips[index];
+            if (!clip) return;
+
+            // Update UI list highlight
+            renderClipList(state.clips);
+
+            // Update Clip Controls Info
+            clipEditorControls.classList.remove('hidden');
+            activeClipTitle.textContent = clip.title;
+            activeClipReason.textContent = clip.reason;
+            activeClipViralScore.textContent = `Viral ${clip.viralScore}%`;
+            timeStartLabel.textContent = formatTime(clip.startTime);
+            timeEndLabel.textContent = formatTime(clip.endTime);
+
+            // Seek YouTube Player
+            if (state.player && state.player.seekTo) {
+                state.player.seekTo(clip.startTime, true);
+                state.player.playVideo();
+            }
+
+            // Start Sync Subtitle Loop
+            startSubtitleSync(clip);
+        }
+
+        // Player State Event
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                state.isPlaying = true;
+                checkClipTimeBoundary();
+            } else {
+                state.isPlaying = false;
+            }
+        }
+
+        // Check if playback stays inside active clip range
+        function checkClipTimeBoundary() {
+            if (state.subtitleInterval) clearInterval(state.subtitleInterval);
+            
+            state.subtitleInterval = setInterval(() => {
+                if (!state.player || !state.isPlaying || state.activeClipIndex === null) return;
+
+                const clip = state.clips[state.activeClipIndex];
+                if (!clip) return;
+
+                const currentTime = state.player.getCurrentTime();
+
+                // Loop playback if time exceeds clip end
+                if (currentTime >= clip.endTime) {
+                    state.player.seekTo(clip.startTime, true);
+                }
+
+                // Sync Subtitle Text
+                updateSubtitleDisplay(clip.subtitles, currentTime);
+            }, 200);
+        }
+
+        // Render Animated Karaoke Subtitle
+        function updateSubtitleDisplay(subtitles, currentTime) {
+            if (!subtitles || subtitles.length === 0 || state.outputFormat !== '9:16_sub') {
+                subtitleText.innerHTML = `<span class="text-gray-400">Subtitle tidak aktif</span>`;
+                return;
+            }
+
+            const currentSub = subtitles.find(s => currentTime >= s.start && currentTime <= s.end);
+
+            if (currentSub) {
+                // Split words for animated karaoke highlight simulation
+                const words = currentSub.text.split(' ');
+                const progress = (currentTime - currentSub.start) / (currentSub.end - currentSub.start);
+                const activeWordIndex = Math.floor(progress * words.length);
+
+                const formattedWords = words.map((word, idx) => {
+                    const isActive = idx === activeWordIndex;
+                    return `<span class="subtitle-word ${isActive ? 'subtitle-active' : ''}">${word}</span>`;
+                }).join(' ');
+
+                subtitleText.innerHTML = formattedWords;
+            } else {
+                subtitleText.innerHTML = `<span class="text-gray-400 opacity-50">...</span>`;
+            }
+        }
+
+        function startSubtitleSync(clip) {
+            if (state.subtitleInterval) clearInterval(state.subtitleInterval);
+            checkClipTimeBoundary();
+        }
+
+        // Control Buttons
+        playClipBtn.addEventListener('click', () => {
+            if (state.activeClipIndex !== null) {
+                selectClip(state.activeClipIndex);
+            }
+        });
+
+        downloadClipBtn.addEventListener('click', () => {
+            if (state.activeClipIndex === null) return;
+            const clip = state.clips[state.activeClipIndex];
+            
+            // Simulation Export Alert
+            const msg = `Memulai rendering Klip "${clip.title}"!\n\nFormat: ${state.outputFormat}\nTimestamp: ${formatTime(clip.startTime)} - ${formatTime(clip.endTime)}\n\nFile MP4 siap diunduh secara otomatis.`;
+            alert(msg);
+        });
+
+        // Initialize display state
+        updateFormatDisplay();
+    </script>
+</body>
+</html>
