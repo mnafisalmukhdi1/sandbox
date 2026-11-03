@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ODOJ Manager - SIT Ihsanul Amal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200 antialiased">
+
+    <!-- Header Section -->
+    <header class="bg-emerald-800 dark:bg-emerald-950 text-white shadow-lg sticky top-0 z-30 border-b border-emerald-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="flex items-center justify-between w-full md:w-auto">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-emerald-700/60 p-2 rounded-xl border border-emerald-600/50">
+                            <span class="material-symbols-outlined text-2xl sm:text-3xl text-emerald-200">menu_book</span>
+                        </div>
+                        <div>
+                            <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                                ODOJ Manager <span class="text-[10px] sm:text-xs font-semibold bg-emerald-600/90 text-emerald-100 px-2 py-0.5 rounded-full border border-emerald-500/50">SIT Ihsanul Amal</span>
+                            </h1>
+                            <p class="text-xs text-emerald-200/90">Sistem Rotasi Juz Manual & Rekapitulasi Tilawah Harian</p>
+                        </div>
+                    </div>
+
+                    <!-- Dark mode toggle for mobile -->
+                    <button onclick="toggleDarkMode()" class="md:hidden p-2 text-emerald-200 hover:text-white rounded-lg hover:bg-emerald-700/50">
+                        <span class="material-symbols-outlined text-xl" id="darkModeIconMobile">dark_mode</span>
+                    </button>
+                </div>
+
+                <!-- Date controls and 21:00 WITA Reminder Badge -->
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 bg-emerald-900/60 p-2 sm:p-2.5 rounded-xl border border-emerald-700/50 text-xs sm:text-sm">
+                    <!-- Date Picker with +/- 1 Day buttons -->
+                    <div class="flex items-center gap-1 bg-emerald-950/60 p-1 rounded-lg border border-emerald-700/40">
+                        <button onclick="shiftDate(-1)" class="p-1 text-emerald-200 hover:text-white hover:bg-emerald-800/80 rounded transition" title="Hari Sebelumnya">
+                            <span class="material-symbols-outlined text-base">chevron_left</span>
+                        </button>
+                        <input type="date" id="datePicker" class="bg-transparent border-0 text-white text-xs font-medium focus:outline-none focus:ring-0 cursor-pointer">
+                        <button onclick="shiftDate(1)" class="p-1 text-emerald-200 hover:text-white hover:bg-emerald-800/80 rounded transition" title="Hari Berikutnya (+1 Hari)">
+                            <span class="material-symbols-outlined text-base">chevron_right</span>
+                        </button>
+                    </div>
+
+                    <div class="h-4 w-px bg-emerald-700/60 hidden sm:block"></div>
+
+                    <!-- 21:00 WITA Notice -->
+                    <div class="flex items-center gap-1.5 px-2 py-1 bg-amber-500/20 text-amber-200 border border-amber-500/30 rounded-lg text-xs" title="Catatan Pengingat: Fitur aplikasi tetap aktif 24 jam tanpa batasan/terkunci">
+                        <span class="material-symbols-outlined text-amber-300 text-base">schedule</span>
+                        <span>Batas Rekap: <strong class="text-amber-300 font-bold">21:00 WITA</strong> <span class="hidden sm:inline text-[10px] opacity-80">(Pengingat saja)</span></span>
+                    </div>
+
+                    <!-- Dark mode toggle desktop -->
+                    <button onclick="toggleDarkMode()" class="hidden md:flex p-1.5 text-emerald-200 hover:text-white rounded-lg hover:bg-emerald-700/50 transition" title="Ganti Mode Gelap/Terang">
+                        <span class="material-symbols-outlined text-lg" id="darkModeIconDesktop">dark_mode</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-5">
+
+        <!-- Top Control Bar -->
+        <div class="mb-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 bg-white dark:bg-slate-900 p-3.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+            <!-- Category Tabs -->
+            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full lg:w-auto">
+                <button id="tabIkhwanBtn" onclick="switchGroup('ikhwan')" class="flex-1 lg:flex-none px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-emerald-700 text-white shadow-sm">
+                    <span class="material-symbols-outlined text-lg">man</span>
+                    <span>IKHWAN</span>
+                    <span id="badgeIkhwan" class="bg-emerald-800/80 text-emerald-100 text-[11px] px-2 py-0.5 rounded-full font-medium">0/0</span>
+                </button>
+                <button id="tabAkhwatBtn" onclick="switchGroup('akhwat')" class="flex-1 lg:flex-none px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                    <span class="material-symbols-outlined text-lg">woman</span>
+                    <span>AKHWAT</span>
+                    <span id="badgeAkhwat" class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] px-2 py-0.5 rounded-full font-medium">0/0</span>
+                </button>
+            </div>
+
+            <!-- Global Action Buttons -->
+            <div class="flex flex-wrap items-center gap-2">
+                <button onclick="confirmRotateJuz()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3.5 py-2 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-sm" title="Maju 1 Juz untuk semua anggota kelompok ini">
+                    <span class="material-symbols-outlined text-lg">autorenew</span>
+                    <span>Rotasi Manual (+1 Juz)</span>
+                </button>
+                <button onclick="resetAllStatus()" class="flex-1 sm:flex-none bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 font-medium px-3 py-2 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-lg">restart_alt</span>
+                    <span>Reset Centang</span>
+                </button>
+                <button onclick="checkAllStatus()" class="flex-1 sm:flex-none bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 border border-slate-200 dark:border-slate-700 font-medium px-3 py-2 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-lg">done_all</span>
+                    <span>Centang Semua</span>
+                </button>
+                <button onclick="openMemberModal()" class="flex-1 sm:flex-none bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white font-medium px-3 py-2 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <span class="material-symbols-outlined text-lg">person_add</span>
+                    <span>Tambah Anggota</span>
+                </button>
+                
+                <div class="h-5 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block mx-0.5"></div>
+                
+                <button onclick="openBackupModal()" class="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition" title="Backup & Restorasi Data Master">
+                    <span class="material-symbols-outlined text-xl">settings_backup_restore</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+            <!-- Member List Panel (Left) -->
+            <div class="lg:col-span-7 flex flex-col space-y-3.5">
+                
+                <!-- Search & Filter Controls -->
+                <div class="bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-2.5 items-center justify-between">
+                    <div class="relative w-full sm:w-64">
+                        <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-lg">search</span>
+                        <input type="text" id="searchInput" oninput="renderList()" placeholder="Cari nama atau nomor juz..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Filter:</span>
+                        <select id="filterStatus" onchange="renderList()" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-slate-700 dark:text-slate-200 font-medium">
+                            <option value="all">Semua Status</option>
+                            <option value="unfinished">❌ Belum Laporan</option>
+                            <option value="finished">✅ Sudah Tilawah</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Interactive List Items -->
+                <div id="memberListContainer" class="space-y-2 max-h-[620px] overflow-y-auto pr-1">
+                    <!-- Dynamic Member Rows -->
+                </div>
+            </div>
+
+            <!-- Preview & WhatsApp Panel (Right) -->
+            <div class="lg:col-span-5 flex flex-col space-y-3.5">
+                <div class="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col h-full">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-emerald-600 dark:text-emerald-400">chat</span>
+                            <h2 class="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base">Format Whatsapp Group</h2>
+                        </div>
+                        <span id="copySuccessToast" class="hidden text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-lg border border-emerald-200 dark:border-emerald-800 font-medium">
+                            ✓ Copied!
+                        </span>
+                    </div>
+
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2.5">Teks ini siap langsung disalin atau dikirim langsung ke WhatsApp Group ODOJ.</p>
+
+                    <textarea id="waPreviewTextarea" class="w-full flex-1 min-h-[360px] p-3 text-xs sm:text-sm font-mono bg-slate-900 text-emerald-400 rounded-xl border border-slate-800 focus:outline-none resize-none leading-relaxed" readonly></textarea>
+
+                    <div class="pt-3.5 flex flex-col sm:flex-row items-center gap-2">
+                        <button onclick="copyToClipboard()" class="w-full sm:flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl text-xs sm:text-sm transition shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">content_copy</span>
+                            <span>Copy Teks</span>
+                        </button>
+                        <button onclick="shareToWhatsApp()" class="w-full sm:flex-1 bg-green-700 hover:bg-green-800 text-white font-semibold py-2.5 rounded-xl text-xs sm:text-sm transition shadow-md shadow-green-700/20 flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-lg">send</span>
+                            <span>Kirim Ke WA</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Member Management (Add/Edit) -->
+    <div id="memberModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-xl border border-slate-100 dark:border-slate-800">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 id="modalTitle" class="font-bold text-base sm:text-lg text-slate-800 dark:text-slate-100">Tambah Anggota</h3>
+                <button onclick="closeMemberModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg p-1">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <form id="memberForm" onsubmit="saveMember(event)" class="space-y-3.5 mt-4">
+                <input type="hidden" id="editMemberId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Kategori Kelompok</label>
+                    <select id="modalGroup" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="ikhwan">IKHWAN</option>
+                        <option value="akhwat">AKHWAT</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Nama Anggota (Ustadz / Ustadzah)</label>
+                    <input type="text" id="modalName" required placeholder="Contoh: Ust Ahmad Sauri" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase mb-1">Tugas Juz (1 - 30)</label>
+                    <input type="number" id="modalJuz" min="1" max="30" required placeholder="1" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeMemberModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs sm:text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold shadow-sm">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Data Backup & Restorasi -->
+    <div id="backupModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-xl border border-slate-100 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="font-bold text-base sm:text-lg text-slate-800 dark:text-slate-100">Backup & Restore Master Data</h3>
+                <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg p-1">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">Gunakan fitur ini untuk menyimpan salinan cadangan data atau mengembalikan daftar anggota awal dari prompt.</p>
+
+            <div class="space-y-2.5 pt-1">
+                <button onclick="exportJSON()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 transition">
+                    <span class="material-symbols-outlined text-lg">download</span>
+                    <span>Download File Backup (JSON)</span>
+                </button>
+
+                <div class="relative">
+                    <input type="file" id="importFileInput" onchange="importJSON(event)" accept=".json" class="hidden">
+                    <button onclick="document.getElementById('importFileInput').click()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 transition">
+                        <span class="material-symbols-outlined text-lg">upload</span>
+                        <span>Import / Restore dari File JSON</span>
+                    </button>
+                </div>
+
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button onclick="resetToInitialDefaults()" class="w-full bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 font-medium py-2.5 px-4 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 border border-rose-200 dark:border-rose-900/50 transition">
+                        <span class="material-symbols-outlined text-lg">restore</span>
+                        <span>Reset Kembali ke Data Awal Prompt</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs sm:text-sm px-4 py-3 rounded-xl shadow-2xl z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-2 border border-slate-700 dark:border-slate-300 font-medium">
+        <span class="material-symbols-outlined text-emerald-400 dark:text-emerald-600 text-lg" id="toastIcon">check_circle</span>
+        <span id="toastMessage">Notifikasi</span>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // Pre-loaded Master Data from prompt
+        const defaultIkhwan = [
+            { id: "i1", name: "Ust Ahmad Sauri", juz: 1, done: false },
+            { id: "i2", name: "Ust Khairudin", juz: 2, done: false },
+            { id: "i3", name: "Ust Nafis", juz: 3, done: false },
+            { id: "i4", name: "Ust Ufiq", juz: 4, done: false },
+            { id: "i5", name: "Ust Elyadi", juz: 5, done: false },
+            { id: "i6", name: "Ust Ibrahim", juz: 6, done: false },
+            { id: "i7", name: "Ust Parhani", juz: 7, done: false },
+            { id: "i8", name: "Ust Yusuf Firdaus", juz: 8, done: false },
+            { id: "i9", name: "Ust Rizali", juz: 9, done: false },
+            { id: "i10", name: "Ust Faisal", juz: 9, done: false },
+            { id: "i11", name: "Ust Hasmi", juz: 10, done: false },
+            { id: "i12", name: "Ust Hamidi", juz: 11, done: false },
+            { id: "i13", name: "Ust M. Noor", juz: 12, done: false },
+            { id: "i14", name: "Ust Fauzan", juz: 13, done: false },
+            { id: "i15", name: "Ust Ilhamnoor", juz: 14, done: false },
+            { id: "i16", name: "Ust Mohd Baderi", juz: 15, done: false },
+            { id: "i17", name: "Ust Ahmad Rabianor", juz: 16, done: false },
+            { id: "i18", name: "Ust Nasrullah", juz: 17, done: false },
+            { id: "i19", name: "Ust Johan", juz: 18, done: false },
+            { id: "i20", name: "Ust Amirudin", juz: 19, done: false },
+            { id: "i21", name: "Ust Ramadhan", juz: 20, done: false },
+            { id: "i22", name: "Ust Ahmad Faridi", juz: 21, done: false },
+            { id: "i23", name: "Ust Abdurrahman", juz: 21, done: false },
+            { id: "i24", name: "Ust Syahid", juz: 22, done: false },
+            { id: "i25", name: "Ust M Yusuf", juz: 22, done: false },
+            { id: "i26", name: "Ust Said Mahfuzh", juz: 23, done: false },
+            { id: "i27", name: "Ust Nor Zajuli Ghani", juz: 23, done: false },
+            { id: "i28", name: "Ust Hidayatullah", juz: 24, done: false },
+            { id: "i29", name: "Ust Aulia Rahman", juz: 24, done: false },
+            { id: "i30", name: "Ust Rukhyat", juz: 25, done: false },
+            { id: "i31", name: "Ust Riadi", juz: 25, done: false },
+            { id: "i32", name: "Ust Ryansyah", juz: 26, done: false },
+            { id: "i33", name: "Ust Hidayat (Boarding)", juz: 26, done: false },
+            { id: "i34", name: "Ust Muzakir", juz: 27, done: false },
+            { id: "i35", name: "Ust Indra", juz: 28, done: false },
+            { id: "i36", name: "Ust Riduan", juz: 28, done: false },
+            { id: "i37", name: "Ust Abdul Razak", juz: 29, done: false },
+            { id: "i38", name: "Ust Yasir", juz: 29, done: false },
+            { id: "i39", name: "Ust Abdul Halim", juz: 30, done: false }
+        ];
+
+        const defaultAkhwat = [
+            { id: "a1", name: "Usth Aisyah", juz: 1, done: false },
+            { id: "a2", name: "Usth Lia", juz: 1, done: false },
+            { id: "a3", name: "Usth Noer Faizah", juz: 2, done: false },
+            { id: "a4", name: "Usth Siti Maryam", juz: 2, done: false },
+            { id: "a5", name: "Usth Niswah", juz: 3, done: false },
+            { id: "a6", name: "Usth Lisa Muzdhalifah", juz: 3, done: false },
+            { id: "a7", name: "Usth Heldayanti", juz: 4, done: false },
+            { id: "a8", name: "Usth Hujjah", juz: 4, done: false },
+            { id: "a9", name: "Usth Liza", juz: 5, done: false },
+            { id: "a10", name: "Usth Maslina", juz: 5, done: false },
+            { id: "a11", name: "Usth Murni", juz: 6, done: false },
+            { id: "a12", name: "Usth Rinawati", juz: 7, done: false },
+            { id: "a13", name: "Usth Isna", juz: 7, done: false },
+            { id: "a14", name: "Usth Muti'ah", juz: 8, done: false },
+            { id: "a15", name: "Usth Rofiqoh", juz: 8, done: false },
+            { id: "a16", name: "Usth Marniyah", juz: 9, done: false },
+            { id: "a17", name: "Usth Rahmah", juz: 9, done: false },
+            { id: "a18", name: "Usth Noor Hikmah", juz: 10, done: false },
+            { id: "a19", name: "Usth Ana", juz: 10, done: false },
+            { id: "a20", name: "Usth Safiah", juz: 10, done: false },
+            { id: "a21", name: "Usth Sri Maida", juz: 11, done: false },
+            { id: "a22", name: "Usth Hernita", juz: 11, done: false },
+            { id: "a23", name: "Usth Yulianti", juz: 12, done: false },
+            { id: "a24", name: "Usth Rahmadhaniaty", juz: 12, done: false },
+            { id: "a25", name: "Usth Hairuna", juz: 13, done: false },
+            { id: "a26", name: "Usth Khadijah", juz: 13, done: false },
+            { id: "a27", name: "Usth Munawarah", juz: 14, done: false },
+            { id: "a28", name: "Usth Fatimah Q", juz: 15, done: false },
+            { id: "a29", name: "Usth Normaliyah", juz: 15, done: false },
+            { id: "a30", name: "Usth Zurida", juz: 16, done: false },
+            { id: "a31", name: "Usth Tari", juz: 16, done: false },
+            { id: "a32", name: "Usth Nita", juz: 17, done: false },
+            { id: "a33", name: "Usth Sopia", juz: 17, done: false },
+            { id: "a34", name: "Usth Anisah", juz: 18, done: false },
+            { id: "a35", name: "Usth Huda", juz: 18, done: false },
+            { id: "a36", name: "Usth Misbah", juz: 19, done: false },
+            { id: "a37", name: "Usth Aisatu", juz: 19, done: false },
+            { id: "a38", name: "Usth Misda", juz: 20, done: false },
+            { id: "a39", name: "Usth Rusmawarni", juz: 20, done: false },
+            { id: "a40", name: "Usth Upliyah", juz: 21, done: false },
+            { id: "a41", name: "Usth Maisarah", juz: 21, done: false },
+            { id: "a42", name: "Usth Khairiyah", juz: 22, done: false },
+            { id: "a43", name: "Usth Ferra", juz: 23, done: false },
+            { id: "a44", name: "Usth Fitriah", juz: 23, done: false },
+            { id: "a45", name: "Usth Meliyanti", juz: 24, done: false },
+            { id: "a46", name: "Usth Herlina", juz: 24, done: false },
+            { id: "a47", name: "Usth Diana", juz: 25, done: false },
+            { id: "a48", name: "Usth Sumiati", juz: 25, done: false },
+            { id: "a49", name: "Usth Fitri", juz: 26, done: false },
+            { id: "a50", name: "Usth Dinah", juz: 26, done: false },
+            { id: "a51", name: "Usth Mita", juz: 27, done: false },
+            { id: "a52", name: "Usth Mariatul Kiptiah", juz: 27, done: false },
+            { id: "a53", name: "Usth Irma", juz: 28, done: false },
+            { id: "a54", name: "Usth Misrina", juz: 28, done: false },
+            { id: "a55", name: "Usth Syahriati", juz: 29, done: false },
+            { id: "a56", name: "Usth Nordiana", juz: 29, done: false },
+            { id: "a57", name: "Usth Muawanah", juz: 29, done: false },
+            { id: "a58", name: "Usth Khairiah (Walas)", juz: 30, done: false },
+            { id: "a59", name: "Usth Rifqa", juz: 30, done: false },
+            { id: "a60", name: "Usth Husnaniah", juz: 30, done: false }
+        ];
+
+        // State Variables
+        let currentTab = 'ikhwan';
+        let ikhwanList = [];
+        let akhwatList = [];
+        let selectedDate = '';
+
+        const daysIndo = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const monthsIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        window.onload = function() {
+            loadState();
+            setupDatePicker();
+            renderList();
+            updateBadges();
+            generateWAPreview();
+            initTheme();
+        };
+
+        function loadState() {
+            const savedIkhwan = localStorage.getItem('odoj_ikhwan_v2');
+            const savedAkhwat = localStorage.getItem('odoj_akhwat_v2');
+
+            ikhwanList = savedIkhwan ? JSON.parse(savedIkhwan) : [...defaultIkhwan];
+            akhwatList = savedAkhwat ? JSON.parse(savedAkhwat) : [...defaultAkhwat];
+        }
+
+        function saveState() {
+            localStorage.setItem('odoj_ikhwan_v2', JSON.stringify(ikhwanList));
+            localStorage.setItem('odoj_akhwat_v2', JSON.stringify(akhwatList));
+            updateBadges();
+            generateWAPreview();
+        }
+
+        function setupDatePicker() {
+            const dateInput = document.getElementById('datePicker');
+            const savedDate = localStorage.getItem('odoj_selected_date');
+
+            if (savedDate) {
+                dateInput.value = savedDate;
+            } else {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                dateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+
+            selectedDate = dateInput.value;
+
+            dateInput.addEventListener('change', function(e) {
+                selectedDate = e.target.value;
+                localStorage.setItem('odoj_selected_date', selectedDate);
+                generateWAPreview();
+            });
+        }
+
+        function shiftDate(offsetDays) {
+            const dateInput = document.getElementById('datePicker');
+            let current = new Date(dateInput.value + 'T00:00:00');
+            if (isNaN(current.getTime())) {
+                current = new Date();
+            }
+            current.setDate(current.getDate() + offsetDays);
+
+            const yyyy = current.getFullYear();
+            const mm = String(current.getMonth() + 1).padStart(2, '0');
+            const dd = String(current.getDate()).padStart(2, '0');
+            dateInput.value = `${yyyy}-${mm}-${dd}`;
+            selectedDate = dateInput.value;
+            localStorage.setItem('odoj_selected_date', selectedDate);
+            generateWAPreview();
+            showToast(`Tanggal diubah ke ${getFormattedDateStr(selectedDate)}`);
+        }
+
+        function getFormattedDateStr(dateIso) {
+            if (!dateIso) return '';
+            const d = new Date(dateIso + 'T00:00:00');
+            if (isNaN(d.getTime())) return dateIso;
+            const dayName = daysIndo[d.getDay()];
+            const dayNum = d.getDate();
+            const monthName = monthsIndo[d.getMonth()];
+            const year = d.getFullYear();
+            return `${dayName}, ${dayNum} ${monthName} ${year}`;
+        }
+
+        function switchGroup(group) {
+            currentTab = group;
+            const ikhwanBtn = document.getElementById('tabIkhwanBtn');
+            const akhwatBtn = document.getElementById('tabAkhwatBtn');
+
+            if (group === 'ikhwan') {
+                ikhwanBtn.className = "flex-1 lg:flex-none px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-emerald-700 text-white shadow-sm";
+                akhwatBtn.className = "flex-1 lg:flex-none px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+            } else {
+                akhwatBtn.className = "flex-1 lg:flex-none px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 bg-emerald-700 text-white shadow-sm";
+                ikhwanBtn.className = "flex-1 lg:flex-none px-5 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white";
+            }
+
+            renderList();
+            generateWAPreview();
+        }
+
+        function getActiveList() {
+            return currentTab === 'ikhwan' ? ikhwanList : akhwatList;
+        }
+
+        function renderList() {
+            const container = document.getElementById('memberListContainer');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filterVal = document.getElementById('filterStatus').value;
+            const list = getActiveList();
+
+            let filtered = list.filter(m => {
+                const matchSearch = m.name.toLowerCase().includes(searchVal) || m.juz.toString().includes(searchVal);
+                const matchStatus = filterVal === 'all' || 
+                                   (filterVal === 'finished' && m.done) || 
+                                   (filterVal === 'unfinished' && !m.done);
+                return matchSearch && matchStatus;
+            });
+
+            filtered.sort((a, b) => a.juz - b.juz);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 text-center border border-slate-200 dark:border-slate-800">
+                        <span class="material-symbols-outlined text-4xl text-slate-300 dark:text-slate-700 mb-2">search_off</span>
+                        <p class="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Tidak ada nama atau juz yang cocok.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => {
+                const statusIcon = item.done ? '✅' : '❌';
+                const cardBg = item.done 
+                    ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/50' 
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800';
+                const juzBadgeClass = item.done 
+                    ? 'bg-emerald-600 text-white' 
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700';
+
+                return `
+                    <div class="p-3 sm:p-3.5 rounded-2xl border ${cardBg} transition-all duration-150 flex items-center justify-between hover:shadow-sm">
+                        <div class="flex items-center space-x-3 cursor-pointer select-none flex-1 min-w-0" onclick="toggleMemberStatus('${item.id}')">
+                            <span class="text-2xl transform active:scale-125 transition-transform flex-shrink-0">
+                                ${statusIcon}
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-slate-800 dark:text-slate-100 text-sm sm:text-base truncate ${item.done ? 'line-through opacity-70' : ''}">${item.name}</span>
+                                </div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${juzBadgeClass}">Juz ${item.juz}</span>
+                                    <span>${item.done ? 'Selesai' : 'Belum Laporan'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-1 pl-2">
+                            <button onclick="openMemberModal('${item.id}')" class="p-1.5 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-lg transition" title="Edit Anggota">
+                                <span class="material-symbols-outlined text-lg">edit</span>
+                            </button>
+                            <button onclick="deleteMember('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition" title="Hapus Anggota">
+                                <span class="material-symbols-outlined text-lg">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleMemberStatus(id) {
+            const list = getActiveList();
+            const member = list.find(m => m.id === id);
+            if (member) {
+                member.done = !member.done;
+                saveState();
+                renderList();
+            }
+        }
+
+        function updateBadges() {
+            const ikhwanDone = ikhwanList.filter(m => m.done).length;
+            const akhwatDone = akhwatList.filter(m => m.done).length;
+
+            document.getElementById('badgeIkhwan').innerText = `${ikhwanDone}/${ikhwanList.length}`;
+            document.getElementById('badgeAkhwat').innerText = `${akhwatDone}/${akhwatList.length}`;
+        }
+
+        // Manual Rolling Trigger
+        function confirmRotateJuz() {
+            const categoryName = currentTab === 'ikhwan' ? 'IKHWAN' : 'AKHWAT';
+            if (confirm(`JALANKAN ROTASI MANUAL (+1 JUZ) UNTUK ${categoryName}?\n\n- Juz 30 akan menjadi Juz 1\n- Juz 1 -> Juz 2, dst.\n- Status centang akan di-reset (❌).\n- Tanggal daftar akan otomatis bertambah +1 Hari.`)) {
+                rotateJuz(currentTab);
+                shiftDate(1); // Increment date automatically when rolling
+            }
+        }
+
+        function rotateJuz(group) {
+            const list = group === 'ikhwan' ? ikhwanList : akhwatList;
+            
+            list.forEach(member => {
+                let nextJuz = member.juz + 1;
+                if (nextJuz > 30) {
+                    nextJuz = 1;
+                }
+                member.juz = nextJuz;
+                member.done = false;
+            });
+
+            saveState();
+            renderList();
+            showToast(`Rotasi Juz kelompok ${group.toUpperCase()} berhasil diselesaikan!`);
+        }
+
+        function resetAllStatus() {
+            const categoryName = currentTab === 'ikhwan' ? 'IKHWAN' : 'AKHWAT';
+            if (confirm(`Reset semua status centang kelompok ${categoryName} menjadi Belum (❌)?`)) {
+                const list = getActiveList();
+                list.forEach(m => m.done = false);
+                saveState();
+                renderList();
+                showToast(`Status centang ${categoryName} di-reset.`);
+            }
+        }
+
+        function checkAllStatus() {
+            const categoryName = currentTab === 'ikhwan' ? 'IKHWAN' : 'AKHWAT';
+            const list = getActiveList();
+            list.forEach(m => m.done = true);
+            saveState();
+            renderList();
+            showToast(`Semua anggota ${categoryName} ditandai selesai (✅).`);
+        }
+
+        function generateWAPreview() {
+            const isIkhwan = currentTab === 'ikhwan';
+            const list = isIkhwan ? ikhwanList : akhwatList;
+            const dateStr = getFormattedDateStr(selectedDate);
+
+            let text = `*LIST JUZ TILAWAH ODOJ ${isIkhwan ? 'IKHWAN' : 'AKHWAT'} - SIT IHSANUL AMAL*\n`;
+            text += `📅 Hari/Tanggal: ${dateStr}\n\n`;
+
+            const sorted = [...list].sort((a, b) => a.juz - b.juz);
+
+            sorted.forEach(m => {
+                const icon = m.done ? '✅' : '❌';
+                text += `${icon} Juz ${m.juz} : ${m.name}\n`;
+            });
+
+            document.getElementById('waPreviewTextarea').value = text;
+        }
+
+        function copyToClipboard() {
+            const textarea = document.getElementById('waPreviewTextarea');
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+
+            try {
+                document.execCommand('copy');
+                const copyBadge = document.getElementById('copySuccessToast');
+                copyBadge.classList.remove('hidden');
+                setTimeout(() => copyBadge.classList.add('hidden'), 2500);
+                showToast("Teks list WhatsApp berhasil dicopy!");
+            } catch (err) {
+                showToast("Silakan copy teks secara manual.");
+            }
+        }
+
+        function shareToWhatsApp() {
+            const text = document.getElementById('waPreviewTextarea').value;
+            const encodedText = encodeURIComponent(text);
+            window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
+        }
+
+        function openMemberModal(id = null) {
+            const modal = document.getElementById('memberModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const editId = document.getElementById('editMemberId');
+            const modalGroup = document.getElementById('modalGroup');
+            const modalName = document.getElementById('modalName');
+            const modalJuz = document.getElementById('modalJuz');
+
+            modalGroup.value = currentTab;
+
+            if (id) {
+                const list = getActiveList();
+                const member = list.find(m => m.id === id);
+                if (member) {
+                    modalTitle.innerText = "Edit Anggota";
+                    editId.value = member.id;
+                    modalName.value = member.name;
+                    modalJuz.value = member.juz;
+                }
+            } else {
+                modalTitle.innerText = "Tambah Anggota Baru";
+                editId.value = "";
+                modalName.value = "";
+                modalJuz.value = 1;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeMemberModal() {
+            document.getElementById('memberModal').classList.add('hidden');
+        }
+
+        function saveMember(event) {
+            event.preventDefault();
+            const id = document.getElementById('editMemberId').value;
+            const group = document.getElementById('modalGroup').value;
+            const name = document.getElementById('modalName').value.trim();
+            const juz = parseInt(document.getElementById('modalJuz').value) || 1;
+
+            const targetList = group === 'ikhwan' ? ikhwanList : akhwatList;
+
+            if (id) {
+                const member = targetList.find(m => m.id === id);
+                if (member) {
+                    member.name = name;
+                    member.juz = juz;
+                }
+            } else {
+                const newId = (group === 'ikhwan' ? 'i' : 'a') + Date.now();
+                targetList.push({
+                    id: newId,
+                    name: name,
+                    juz: juz,
+                    done: false
+                });
+            }
+
+            saveState();
+            closeMemberModal();
+            renderList();
+            showToast("Data anggota disimpan!");
+        }
+
+        function deleteMember(id) {
+            if (confirm("Hapus anggota ini dari daftar ODOJ?")) {
+                if (currentTab === 'ikhwan') {
+                    ikhwanList = ikhwanList.filter(m => m.id !== id);
+                } else {
+                    akhwatList = akhwatList.filter(m => m.id !== id);
+                }
+                saveState();
+                renderList();
+                showToast("Anggota berhasil dihapus.");
+            }
+        }
+
+        function openBackupModal() {
+            document.getElementById('backupModal').classList.remove('hidden');
+        }
+
+        function closeBackupModal() {
+            document.getElementById('backupModal').classList.add('hidden');
+        }
+
+        function exportJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+                ikhwan: ikhwanList,
+                akhwat: akhwatList,
+                exportDate: new Date().toISOString()
+            }, null, 2));
+
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `odoj_ihsanul_amal_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            showToast("File backup JSON telah diunduh!");
+        }
+
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.ikhwan && parsed.akhwat) {
+                        ikhwanList = parsed.ikhwan;
+                        akhwatList = parsed.akhwat;
+                        saveState();
+                        renderList();
+                        closeBackupModal();
+                        showToast("Restore data JSON sukses!");
+                    } else {
+                        alert("Format JSON tidak valid.");
+                    }
+                } catch (err) {
+                    alert("Gagal membaca file JSON.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetToInitialDefaults() {
+            if (confirm("Kembalikan seluruh daftar ke data awal prompt?")) {
+                ikhwanList = JSON.parse(JSON.stringify(defaultIkhwan));
+                akhwatList = JSON.parse(JSON.stringify(defaultAkhwat));
+                saveState();
+                renderList();
+                closeBackupModal();
+                showToast("Daftar di-reset ke data master awal prompt.");
+            }
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('odoj_theme', 'light');
+                updateThemeIcons(false);
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('odoj_theme', 'dark');
+                updateThemeIcons(true);
+            }
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('odoj_theme');
+            const isDark = savedTheme === 'dark';
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            updateThemeIcons(isDark);
+        }
+
+        function updateThemeIcons(isDark) {
+            const iconName = isDark ? 'light_mode' : 'dark_mode';
+            document.getElementById('darkModeIconDesktop').innerText = iconName;
+            document.getElementById('darkModeIconMobile').innerText = iconName;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.innerText = msg;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
